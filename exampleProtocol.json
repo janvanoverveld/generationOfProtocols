@@ -1,0 +1,36 @@
+{
+   "messages" : [ { "name":"ADD",
+                    "parameters":[ { "name":"value1",
+                                     "type":"number" }
+                           ,       { "name":"value2",
+                                     "type":"number" } ]
+                  },
+                  {
+                    "name":"RES",
+                    "parameters":[ { "name":"sum",
+                                     "type":"number" }  ]
+                  },
+                  { "name":"BYE",
+                    "parameters":[] } ],
+   "roles" : ["Alice","Bob"],
+   "protocol" : [ {  "role":"Alice"
+                  ,  "states": [ { "name":"S1"
+                                 , "type":"initial"
+                                 , "transitions":[ { "flow":"send", "message":"ADD","destination":"S2", "role":"Bob" }
+                                                 , { "flow":"send", "message":"BYE","destination":"Done", "role":"Bob" } ] },
+                                 { "name":"S2"
+                                 , "type":"normal"
+                                 , "transitions":[ { "flow":"receive", "message":"RES","destination":"S1", "role":"Bob" } ] },
+                                 { "name":"Done"
+                                  ,"type":"final" } ] },
+                  {  "role":"Bob"
+                  ,  "states": [ { "name":"S1"
+                                 , "type":"initial"
+                                 , "transitions":[ { "flow":"receive", "message":"ADD","destination":"S2", "role":"Alice" }
+                                                 , { "flow":"receive", "message":"BYE","destination":"Done", "role" :"Alice"} ] },
+                                 { "name":"S2"
+                                 , "type":"normal"
+                                 , "transitions":[ { "flow":"send", "message":"RES","destination":"S1", "role":"Alice" } ] },
+                                 { "name":"Done"
+                                 , "type":"final" } ] } ]
+}

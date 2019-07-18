@@ -1,0 +1,21 @@
+import {connectedRoles,roles} from './globalObjects';
+
+export abstract class Message {
+    constructor(public name:string){};
+}
+
+export class ROLEMESSAGE extends Message {
+    public host:string;
+    public port:number;
+    constructor(public roleName:roles){
+        super(ROLEMESSAGE.name);
+        this.host = connectedRoles.getInfo(roleName).host;
+        this.port = connectedRoles.getInfo(roleName).port;
+    }
+}
+
+export class READY extends Message {
+    constructor(){
+        super(READY.name);
+    }
+}
