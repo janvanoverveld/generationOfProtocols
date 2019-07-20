@@ -4,18 +4,16 @@
   "description": "Alice en Bob o.b.v. states",
   "main": "index.js",
   "scripts": {
-    "clean": "node ./node_modules/rimraf/bin.js dist",
+    "cleanJs1": "node ./node_modules/rimraf/bin.js js",
+    "cleanJs2": "rm js/*.js",
+    "linkTS":"npm link typescript",
     "build": "tsc",
-    "cleanJs": "rm js/*.js",
-    "cleanGen": "rm gen/*.ts",
-    "compSrc": "tsc -p C:\\Dropbox\\ou\\AF_afstuderen\\oefen\\generateAliceBobStates",
     "genGen": "node js\\generate.js",
-    "copyGen": "copy C:\\Dropbox\\ou\\AF_afstuderen\\oefen\\generateAliceBobStates\\gen\\*.ts C:\\Dropbox\\ou\\AF_afstuderen\\oefen\\tmp\\testGeneratedSources",
-    "compGen": "tsc -p C:\\Dropbox\\ou\\AF_afstuderen\\oefen\\tmp\\testGeneratedSources",
-    "startGen": "node C:\\Dropbox\\ou\\AF_afstuderen\\oefen\\tmp\\testGeneratedSources\\js\\start.js",
-    "start": "npm run cleanJs && npm run cleanGen && npm run compSrc && npm run genGen && npm run copyGen && npm run compGen && npm run startGen"
+    "start": "npm run cleanJs1 && npm run linkTS && npm run build && npm run genGen"
   },
   "keywords": [
+    "protocol",
+    "code generation",
     "states",
     "alice",
     "bob"
@@ -23,11 +21,12 @@
   "author": "jvo",
   "license": "ISC",
   "dependencies": {
+    "request": "^2.88.0",
+    "rimraf": "^2.6.3"
+  },
+  "devDependencies": {
     "@types/node": "^12.0.12",
     "@types/request": "^2.48.1",
-    "@types/rimraf": "^2.0.2",
-    "request": "^2.88.0",
-    "rimraf": "^2.6.3",
-    "ts-creator": "^1.2.5"
+    "@types/rimraf": "^2.0.2"
   }
 }

@@ -5,6 +5,7 @@ import {getMessageClasses} from './createMessageObjects';
 import {getEnumWithRoles} from './createGlobalObjects';
 import rimraf from 'rimraf';
 import * as fs from 'fs';
+import * as child from 'child_process';
 
 const sourceLocation         = 'sources/';
 const fileNameGlobalObjects  = 'globalObjects.src';
@@ -83,6 +84,21 @@ async function starter(){
     );
 
     console.log('eind generatie');
+
+    console.log('opstarten gegenereerde code mbv. start.ts via npm start')
+
+    child.exec('npm start'
+        , {cwd:`${targetRepoName}`}
+        , (err,data) => {
+            if (err){
+                console.log(`err : ${err}`);
+            }
+            console.log('npm start uitgevoerd voor target repo, resultaat is:');
+            console.log(data);
+            console.log(`einde van het generatie process`);
+        }
+    );
+
 }
 
 starter();
