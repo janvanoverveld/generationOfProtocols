@@ -12,7 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "request": "^2.88.0",
-    "typescript": "^3.5.3"
+    "typescript": "^3.5.3",
+    "wait-queue": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^12.0.12",

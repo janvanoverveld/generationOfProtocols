@@ -76,21 +76,26 @@ connectedRolesMap.set(roles.mediator, {port:30000, host:'localhost'});
 
 export {connectedRoles};
 
+async function sleep(ms:number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 //
 // generieke start functie
 export async function initialize(roleName:roles, port:number, host:string){
-    receiveMessageServer.start(port);
-    connectedRoles.save(roleName,host,port);
-    await sendMessage( roles.mediator, new ROLEMESSAGE(roleName) );
-    while ( true ) {
-        let msg = await waitForMessage();
-        if ( msg.name === ROLEMESSAGE.name) {
-            connectedRoles.save(msg);
-        };
-        if ( msg.name === READY.name) {
-            break;
-        }
-    }
+   receiveMessageServer.start(port);
+   connectedRoles.save(roleName,host,port);
+   await sendMessage( roleName, roles.mediator, new ROLEMESSAGE(roleName) );
+   while ( true ) {
+       let msg = await waitForMessage();
+       if ( msg.name === ROLEMESSAGE.name) {
+           connectedRoles.save(msg);
+       };
+       if ( msg.name === READY.name) {
+           break;
+       }
+   }
+   await sleep(1000);
 }
 
 //

@@ -1,0 +1,93 @@
+{
+   "messages" : [ { "name":"ADD",
+                    "parameters":[ { "name":"value1",
+                                     "type":"number" }
+                           ,       { "name":"value2",
+                                     "type":"number" } ]
+                  },
+                  {
+                    "name":"RES",
+                    "parameters":[ { "name":"sum",
+                                     "type":"number" }  ]
+                  },
+                  { "name":"BYE",
+                    "parameters":[] } ],
+   "roles" : ["Alice","Bob","Fred"],
+   "protocol" : [ {  "role":"Alice"
+                  ,  "states": [ { "name":"S1"
+                                 , "type":"initial"
+                                 , "transitions":[ { "flow":"send", "message":"ADD","destination":"S2", "role":"Bob" }
+                                                 , { "flow":"send", "message":"BYE","destination":"Done", "role":"Bob" } ] },
+                                 { "name":"S2"
+                                 , "type":"normal"
+                                 , "transitions":[ { "flow":"receive", "message":"RES","destination":"S1", "role":"Bob" } ] },
+                                 { "name":"Done"
+                                  ,"type":"final" } ] },
+                  {  "role":"Fred"
+                  ,  "states": [ { "name":"S1"
+                                 , "type":"initial"
+                                 , "transitions":[ { "flow":"send", "message":"ADD","destination":"S2", "role":"Bob" }
+                                                 , { "flow":"send", "message":"BYE","destination":"Done", "role":"Bob" } ] },
+                                 { "name":"S2"
+                                 , "type":"normal"
+                                 , "transitions":[ { "flow":"receive", "message":"RES","destination":"S1", "role":"Bob" } ] },
+                                 { "name":"Done"
+                                  ,"type":"final" } ] },
+                  {  "role":"Bob"
+                  ,  "states": [ { "name":"S1"
+                                 , "type":"initial"
+                                 , "transitions":[ { "flow":"receive", "message":"ADD","destination":"S2", "role":"Alice" }
+                                                 , { "flow":"receive", "message":"BYE","destination":"S4", "role":"Alice" }
+                                                 , { "flow":"receive", "message":"BYE","destination":"S3", "role":"Fred"  }
+                                                 , { "flow":"receive", "message":"ADD","destination":"S5", "role":"Fred"  }
+                                                 ]
+                                 },
+                                 { "name":"S2"
+                                 , "type":"normal"
+                                 , "transitions":[ { "flow":"send", "message":"RES","destination":"S1", "role":"Alice" }
+                                                 ]
+                                 },
+                                 { "name":"S3"
+                                 , "type":"normal"
+                                 , "transitions":[ { "flow":"receive", "message":"ADD","destination":"S6", "role":"Alice" }
+                                                 , { "flow":"receive", "message":"BYE","destination":"Done", "role":"Alice" }
+                                                  ]
+                                 },
+                                 { "name":"S4"
+                                 , "type":"normal"
+                                 , "transitions":[ { "flow":"receive", "message":"ADD","destination":"S7", "role":"Fred" }
+                                                 , { "flow":"receive", "message":"BYE","destination":"Done", "role":"Fred" }
+                                                 ]
+                                 },
+                                 { "name":"S5"
+                                 , "type":"normal"
+                                 , "transitions":[ { "flow":"send", "message":"RES","destination":"S1", "role":"Fred" }
+                                                  ]
+                                 },
+                                 { "name":"S6"
+                                 , "type":"normal"
+                                 , "transitions":[ { "flow":"send", "message":"RES","destination":"S3", "role":"Alice" }
+                                                 ]
+                                 },
+                                 { "name":"S7"
+                                 , "type":"normal"
+                                 , "transitions":[ { "flow":"send", "message":"RES","destination":"S4", "role":"Fred" }
+                                                   ]
+                                 },
+                                 { "name":"Done"
+                                 , "type":"final"
+                                 }
+                               ]
+                    }
+            ]
+}
+
+
+
+
+
+
+
+
+
+

@@ -1,6 +1,7 @@
 import {Parameter,Message,Transition,State,Protocol,RootObject} from './protocolTypeInterface';
 import * as ts from "typescript";
 
+const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const resultFile = ts.createSourceFile("dummy.ts","",ts.ScriptTarget.Latest,false,ts.ScriptKind.TS);
 const printer    = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 const printCode  = (node:ts.Node) => printer.printNode( ts.EmitHint.Unspecified, node, resultFile );
@@ -22,6 +23,9 @@ const idPromise = ts.createIdentifier('Promise');
 const idState   = ts.createIdentifier('state');
 const idReceive = ts.createIdentifier(cReceive);
 
+// Map with key for every state and a array with the messages that can lead to the state
+const stateReceivedMessages:Map<string,string[]> = new Map();
+
 function getImportDefinition(fileName:string, importObjects:string[]):string {
     const fileStringLiteral = ts.createStringLiteral(fileName);
     const importedElements  = importObjects.map( (e) => ts.createImportSpecifier( undefined, ts.createIdentifier( e) ) );
@@ -38,18 +42,25 @@ function getImportDefinitions(messages:string[]):string {
     return importCode + ts.sys.newLine;
 }
 
-function createStateInterface(role:string,state:State,transitionMessageProp?:string):string{
+function getAbstractInterface(role:string):string{
+    const stateProp = ts.createPropertySignature(undefined,ts.createIdentifier('state'),undefined,ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),undefined);
+    const abstractInterfaceDef = ts.createInterfaceDeclaration(undefined,undefined,ts.createIdentifier(`I${capitalize(role)}`),undefined,undefined,[stateProp]);
+    return printCode(abstractInterfaceDef) + ts.sys.newLine;
+}
+
+function createStateInterface(role:string,state:State,transitionMessageProps:string[]):string{
   const interfaceName:ts.Identifier=ts.createIdentifier(`I${role}_${state.name}`);
+
   const stateProp = ts.createPropertySignature( [ts.createModifier(ts.SyntaxKind.ReadonlyKeyword)], idState, undefined, ts.createLiteralTypeNode(ts.createStringLiteral(`${state.name}`)), undefined );
   let tsTypeElements:ts.TypeElement[]=[];
 
   tsTypeElements.push( stateProp );
 
-  if ( transitionMessageProp ){
+  for ( let i=0; i<transitionMessageProps.length; i++ ){
     // a message is received, must be available as prop
-    const optionalProp  = state.type===cInitial?ts.createToken(ts.SyntaxKind.QuestionToken):undefined;
-    const transPropName = ts.createIdentifier(transitionMessageProp.toLocaleLowerCase());
-    const transPropType = ts.createTypeReferenceNode(ts.createIdentifier(transitionMessageProp.toLocaleUpperCase()), undefined);
+    const optionalProp  = (state.type===cInitial||transitionMessageProps.length>1)?ts.createToken(ts.SyntaxKind.QuestionToken):undefined;
+    const transPropName = ts.createIdentifier(transitionMessageProps[i].toLocaleLowerCase());
+    const transPropType = ts.createTypeReferenceNode(ts.createIdentifier(transitionMessageProps[i].toLocaleUpperCase()), undefined);
     const transMsgProp  = ts.createPropertySignature( undefined, transPropName, optionalProp, transPropType, undefined );
     tsTypeElements.push( transMsgProp );
   }
@@ -86,7 +97,8 @@ function createStateInterface(role:string,state:State,transitionMessageProp?:str
     }
   }
 
-  const tsInterface = ts.createInterfaceDeclaration(undefined,undefined,interfaceName,undefined,undefined, tsTypeElements );
+  const inheritFromSuperInterface = ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [ts.createExpressionWithTypeArguments(undefined,ts.createIdentifier(`I${role}`))]);
+  const tsInterface = ts.createInterfaceDeclaration(undefined,undefined,interfaceName,undefined,[inheritFromSuperInterface], tsTypeElements );
 
   return printCode(tsInterface) + ts.sys.newLine;
 }
@@ -137,18 +149,25 @@ function getCheckOneTransitionPossibleForReceive(){
    return statement;
 }
 
-function getPromiseWithMessageSwitchForReceive(messages:string[],states:string[]):ts.Statement{
+function getPromiseWithMessageSwitchForReceive(messages:string[],states:string[],roles:string[]):ts.Statement{
    let switchCaseClauses:ts.CaseOrDefaultClause[]=[];
 
    for ( let i=0; i<messages.length; i++){
-      let caseBranch = ts.createPropertyAccess( ts.createIdentifier(`${messages[i]}`), ts.createIdentifier('name') );
+      let caseBranch = ts.createBinary(
+          ts.createPropertyAccess( ts.createIdentifier(`${messages[i]}`), ts.createIdentifier('name') )
+        , ts.createToken(ts.SyntaxKind.PlusToken)
+        , ts.createPropertyAccess( ts.createIdentifier('roles'), ts.createIdentifier(`${roles[i].toLowerCase()}`) ) );
       let returnState = ts.createIdentifier(`${states[i]}`);
       let returnMsg = ts.createTypeAssertion( ts.createTypeReferenceNode( ts.createIdentifier(`${messages[i]}`), undefined ), ts.createIdentifier('msg') );
       let resolveState = ts.createCall( idResolve, undefined, [ ts.createNew( returnState, undefined, [ returnMsg ] ) ]  );
       switchCaseClauses.push(ts.createCaseClause( caseBranch, [ ts.createBlock( [ ts.createExpressionStatement( resolveState ), ts.createBreak(undefined) ], true ) ] ) );
    }
 
-   const switchStatement = ts.createSwitch( ts.createPropertyAccess(ts.createIdentifier('msg'), ts.createIdentifier('name') ), ts.createCaseBlock(switchCaseClauses) ) ;
+   const switchStatement = ts.createSwitch(
+       ts.createBinary( ts.createPropertyAccess(ts.createIdentifier('msg'),ts.createIdentifier('name'))
+       ,                ts.createToken(ts.SyntaxKind.PlusToken)
+       ,                ts.createPropertyAccess(ts.createIdentifier('msg'),ts.createIdentifier('from')) )
+       , ts.createCaseBlock(switchCaseClauses) ) ;
    const promiseReturn = ts.createArrowFunction( undefined
    , undefined
    , [ts.createParameter(undefined,undefined,undefined,idResolve,undefined,undefined,undefined ) ]
@@ -166,6 +185,7 @@ function getMethods(role:string,state:State):ts.MethodDeclaration[]{
   let methodStatements:ts.Statement[]=[];
   let toReceiveMessages:string[]=[];
   let toCreateStates:string[]=[];
+  let toRoles:string[]=[];
 
   if (state.transitions){
     let receiveMultipleTypes:ts.TypeReferenceNode[]=[];
@@ -185,14 +205,18 @@ function getMethods(role:string,state:State):ts.MethodDeclaration[]{
 
               const methodReturnState = ts.createTypeReferenceNode(ts.createIdentifier(`I${role}_${transition.destination}`), undefined);
 
+              const sendMessageProperty=ts.createIdentifier(`${transition.message.toLocaleLowerCase()}`);
               const currMethodBlock = ts.createBlock(
                     [ ts.createExpressionStatement( ts.createCall(ts.createPropertyAccess(ts.createSuper(),ts.createIdentifier('checkOneTransitionPossible') ),undefined, [] ) )
                     , ts.createExpressionStatement(
                       ts.createCall( ts.createIdentifier('sendMessage')
                                    , undefined
-                                   , [ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(`${transition.role.toLowerCase()}`)),ts.createIdentifier(`${transition.message.toLocaleLowerCase()}`)])
+                                   , [  ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(`${role.toLowerCase()}`))
+                                      , ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(`${transition.role.toLowerCase()}`))
+                                      , sendMessageProperty
+                                     ] )
                       ),
-                      ts.createReturn( ts.createNew(ts.createIdentifier(`${role}_${transition.destination}`), undefined, []) )
+                      ts.createReturn( ts.createNew(ts.createIdentifier(`${role}_${transition.destination}`), undefined, [sendMessageProperty]) )
                     ],
                     true
               );
@@ -203,6 +227,7 @@ function getMethods(role:string,state:State):ts.MethodDeclaration[]{
               receiveMultipleTypes.push(ts.createTypeReferenceNode( ts.createIdentifier(`I${role}_${transition.destination}`), undefined));
               toReceiveMessages.push(`${transition.message}`);
               toCreateStates.push(`${role}_${transition.destination}`);
+              toRoles.push(`${transition.role}`);
             }
         }
     );
@@ -213,7 +238,7 @@ function getMethods(role:string,state:State):ts.MethodDeclaration[]{
       const msgWaitForMessageVarDeclaration = ts.createVariableDeclaration( ts.createIdentifier('msg'), undefined, ts.createAwait( ts.createCall( ts.createIdentifier('waitForMessage'), undefined, [] ) ) );
       const msgWaitForMessage = ts.createVariableStatement( undefined, ts.createVariableDeclarationList( [ msgWaitForMessageVarDeclaration ], ts.NodeFlags.AwaitContext | ts.NodeFlags.Let  ) );
       methodStatements.push(msgWaitForMessage);
-      methodStatements.push(getPromiseWithMessageSwitchForReceive(toReceiveMessages,toCreateStates));
+      methodStatements.push(getPromiseWithMessageSwitchForReceive(toReceiveMessages,toCreateStates,toRoles));
       const methodBlock:ts.Block = ts.createBlock(methodStatements,true);
       methods.push(ts.createMethod(undefined,methodModifiers,undefined,idReceive,undefined,undefined,[],methodReturn,methodBlock));
     }
@@ -222,17 +247,18 @@ function getMethods(role:string,state:State):ts.MethodDeclaration[]{
   return methods;
 }
 
-function returnConstructor(classProperty:string|undefined,stateType:string):ts.ClassElement{
+function returnConstructor(classProperties:string[],stateType:string):ts.ClassElement{
    let classParameters:ts.ParameterDeclaration[]=[];
-   if (classProperty){
-      classParameters.push(ts.createParameter(
-        undefined
-       ,[ts.createModifier(ts.SyntaxKind.PublicKeyword)]
-       ,undefined
-       ,ts.createIdentifier(`${classProperty.toLowerCase()}`)
-       ,stateType===cInitial?ts.createToken(ts.SyntaxKind.QuestionToken):undefined
-       ,ts.createTypeReferenceNode(ts.createIdentifier(`${classProperty.toUpperCase()}`), undefined)
-       ,undefined ));
+
+   for ( let i=0; i<classProperties.length;i++){
+      classParameters.push( ts.createParameter( undefined
+                          , [ts.createModifier(ts.SyntaxKind.PublicKeyword)]
+                          , undefined
+                          , ts.createIdentifier(`${classProperties[i].toLowerCase()}`)
+                          , (stateType===cInitial||classProperties.length>1)?ts.createToken(ts.SyntaxKind.QuestionToken):undefined
+                          , ts.createTypeReferenceNode(ts.createIdentifier(`${classProperties[i].toUpperCase()}`), undefined)
+                          , undefined )
+      );
    }
 
    let constructorBlockCode:ts.Statement[] = [];
@@ -244,7 +270,7 @@ function returnConstructor(classProperty:string|undefined,stateType:string):ts.C
    return ts.createConstructor(undefined,undefined,classParameters,superCall);
 }
 
-function createStateClass(role:string,state:State,transitionMessageProp?:string):string{
+function createStateClass(role:string,state:State,transitionMessageProps:string[]):string{
     const stateClassId=ts.createIdentifier(`${role}_${state.name}`);
     const stateInterfaceId=ts.createIdentifier(`I${role}_${state.name}`);
     const superBaseClassId=ts.createIdentifier(`${role}`);
@@ -257,7 +283,7 @@ function createStateClass(role:string,state:State,transitionMessageProp?:string)
     const stateProperty = ts.createProperty( undefined, [ ts.createModifier(ts.SyntaxKind.PublicKeyword), ts.createModifier(ts.SyntaxKind.ReadonlyKeyword) ], idState, undefined, undefined, ts.createStringLiteral(state.name) );
     classMembers.push(stateProperty);
 
-    classMembers.push(returnConstructor(transitionMessageProp,state.type));
+    classMembers.push(returnConstructor(transitionMessageProps,state.type));
 
     getMethods(role,state).forEach( (e)=>classMembers.push(e) );
 
@@ -265,22 +291,37 @@ function createStateClass(role:string,state:State,transitionMessageProp?:string)
     return printCode(stateClassDeclaration) + ts.sys.newLine;
 }
 
-function receivedMessage(stateName:string, states:State[]):string|undefined{
-   let message:string|undefined;
-   states.forEach(
-       (state) => {
+function getReceivedMessagesForState(stateName:string, states:State[]):string[]{
+    let messages:string[]=[];
+    states.forEach(
+        (state) => {
            if (state.transitions)
-              state.transitions.forEach(
-                  (t) => {
-                      //console.log(`${stateName}  ${state.name}   ${t.destination}   ${t.flow}  ${t.message}  ${t.role}`);
-                      if ( t.destination === stateName && t.flow === cReceive ) {
-                          message = t.message;
-                      }
-                  }
-              );
-       }
-   );
-   return message;
+               state.transitions.forEach(
+                   (t) => {
+                       //console.log(`${stateName}  ${state.name}   ${t.destination}   ${t.flow}  ${t.message}  ${t.role}`);
+                       if ( t.destination === stateName ) {
+                           messages.push(t.message);
+                       }
+                   }
+               );
+        }
+    );
+    return Array.from(new Set(messages));
+}
+
+function initializeReceivedMessagesArrayPerState(protocol:Protocol){
+    protocol.states.forEach(
+        (s)=>{
+            const messages=getReceivedMessagesForState(s.name,protocol.states);
+            stateReceivedMessages.set(s.name,messages);
+        }
+    );
+}
+
+function receivedMessages(stateName:string, states:State[]):string[]{
+    let messages=stateReceivedMessages.get(stateName);
+    if (!messages) messages = [];
+    return messages;
 }
 
 function getMessagesFromProtocol(protocol:Protocol){
@@ -349,17 +390,25 @@ function getExecuteProtocolFunction(protocol:Protocol){
 
 function getStateObjects( protocol:Protocol ):string{
     console.log(`start getStateObjects  ${protocol.role}`);
+
+    // initialize a map with states and the messages that lead to the state
+    initializeReceivedMessagesArrayPerState(protocol);
+    //stateReceivedMessages.forEach((val,key)=> console.log(`${key}  --  ${val}`));
+
     // ophalen van messages
     const protocolMessages=getMessagesFromProtocol(protocol);
 
     // create import definitions
     let returnTxt=getImportDefinitions(protocolMessages);
 
+    // create top/abstract interface
+    returnTxt += getAbstractInterface(protocol.role) + ts.sys.newLine;
+
     // create interfaces
     protocol.states.forEach(
         (state) => {
-            let transitionMessageProp=receivedMessage(state.name,protocol.states);
-            returnTxt+=createStateInterface(protocol.role, state, transitionMessageProp ) + ts.sys.newLine;
+            let transitionMessageProps=receivedMessages(state.name,protocol.states);
+            returnTxt+=createStateInterface(protocol.role, state, transitionMessageProps ) + ts.sys.newLine;
         }
     );
 
@@ -369,14 +418,14 @@ function getStateObjects( protocol:Protocol ):string{
     // create state classes
     protocol.states.forEach(
         (state) => {
-            let transitionMessageProp=receivedMessage(state.name,protocol.states);
-            returnTxt += createStateClass(protocol.role,state,transitionMessageProp) + ts.sys.newLine;
+            let transitionMessageProps=receivedMessages(state.name,protocol.states);
+            returnTxt += createStateClass(protocol.role,state,transitionMessageProps) + ts.sys.newLine;
         }
     );
 
     // create exports
     let exportsSpecifiers:ts.ExportSpecifier[]=[];
-
+    exportsSpecifiers.push(ts.createExportSpecifier(undefined, ts.createIdentifier(`I${protocol.role}`)));
     protocol.states.forEach(
         (state) => exportsSpecifiers.push(ts.createExportSpecifier(undefined, ts.createIdentifier(`I${protocol.role}_${state.name}`)))
     );

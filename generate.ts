@@ -1,4 +1,3 @@
-import protocolData from './exampleProtocol.json';
 import {Parameter,Message,Transition,State,Protocol,RootObject} from './protocolTypeInterface';
 import {getStateObjects} from './createStateObjects';
 import {getMessageClasses} from './createMessageObjects';
@@ -7,10 +6,11 @@ import rimraf from 'rimraf';
 import * as fs from 'fs';
 import * as child from 'child_process';
 
-const sourceLocation         = 'sources/';
-const fileNameGlobalObjects  = 'globalObjects.src';
-const fileNameMessages       = 'Message.src';
-const protoSpec:RootObject   = protocolData;
+const sourceLocation             = 'sources/';
+const sourceLocationAliceBob     = 'sources/aliceBob/';
+const sourceLocationAliceBobFred = 'sources/aliceBobFred/';
+const fileNameGlobalObjects      = 'globalObjects.src';
+const fileNameMessages           = 'Message.src';
 
 function displayProtocol(proto:RootObject){
     for ( let msg of proto.messages) {
@@ -43,8 +43,33 @@ function writeFile (path:string, data:string, opts = 'utf8'):Promise<void> {
    );
 }
 
+async function generateProjectFiles(sourceFilesLocation:string,protocolSpec:RootObject,targetLocation:string){
+    const srcFiles = fs.readdirSync(sourceFilesLocation).filter((f)=>f.includes('.src'));
+    for ( const srcFile of srcFiles ){
+        console.log(`dit is ${srcFile} `);
+        let textFromSource = await readFile( sourceFilesLocation + srcFile );
+        if ( srcFile === fileNameGlobalObjects){
+            textFromSource += getEnumWithRoles(protocolSpec.protocol);
+        }
+        if ( srcFile === fileNameMessages){
+            textFromSource += getMessageClasses(protocolSpec.messages);
+        }
+        let targetFileName = srcFile.search('json')>0?srcFile.replace('.src',''):srcFile.replace('.src','.ts');
+        await writeFile(targetLocation + targetFileName,textFromSource);
+    }
+}
+
 async function starter(){
-    console.log('start generatie');
+
+    //const sourceLocationExtra = sourceLocationAliceBob;
+    //const sourceProtocolJson = "exampleProtocol.json";
+    const sourceLocationExtra = sourceLocationAliceBobFred;
+    const sourceProtocolJson = "exampleProtocolFred.json";
+
+    console.log(`start generatie  ${sourceLocationExtra}`);
+
+    const protocolData=await readFile ( sourceLocationExtra+sourceProtocolJson);
+    const protoSpec:RootObject = JSON.parse(protocolData);
 
     const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
     const rolePartOfName = protoSpec.roles.reduce((ret,role)=>ret+=capitalize(role));
@@ -59,20 +84,9 @@ async function starter(){
 
     displayProtocol(protoSpec);
 
-    let srcFiles = fs.readdirSync(sourceLocation);
+    await generateProjectFiles(sourceLocation,protoSpec,targetRepoName);
 
-    for ( const srcFile of srcFiles ){
-        console.log(`dit is ${srcFile} `);
-        let textFromSource = await readFile( sourceLocation + srcFile );
-        if ( srcFile === fileNameGlobalObjects){
-            textFromSource += getEnumWithRoles(protoSpec.protocol);
-        }
-        if ( srcFile === fileNameMessages){
-            textFromSource += getMessageClasses(protoSpec.messages);
-        }
-        let targetFileName = srcFile.search('json')>0?srcFile.replace('.src',''):srcFile.replace('.src','.ts');
-        await writeFile(targetRepoName + targetFileName,textFromSource);
-    }
+    await generateProjectFiles(sourceLocationExtra,protoSpec,targetRepoName);
 
     console.log(`starten met aanmaken klassen`);
     // creatie van de state klassen van de rollen
@@ -83,22 +97,16 @@ async function starter(){
         }
     );
 
+    if ( false ) {
+        console.log('opstarten gegenereerde code mbv. start.ts via npm start')
+        child.exec('npm start', {cwd:`${targetRepoName}`}
+        , (err,data) => { if (err){ console.log(`err : ${err}`); }
+                          console.log('npm start uitgevoerd voor target repo, resultaat is:');
+                          console.log(data);
+                          console.log(`einde van het generatie process, inclusief opstarten nieuwe applicatie`); } );
+    }
+
     console.log('eind generatie');
-
-    console.log('opstarten gegenereerde code mbv. start.ts via npm start')
-
-    child.exec('npm start'
-        , {cwd:`${targetRepoName}`}
-        , (err,data) => {
-            if (err){
-                console.log(`err : ${err}`);
-            }
-            console.log('npm start uitgevoerd voor target repo, resultaat is:');
-            console.log(data);
-            console.log(`einde van het generatie process`);
-        }
-    );
-
 }
 
 starter();

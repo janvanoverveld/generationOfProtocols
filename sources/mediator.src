@@ -22,11 +22,11 @@ async function initProtocolByMediator(){
 
         for ( let i=0; i<relevantRoles.length; i++ ) {
             for ( let j=0; j<allRoles.length; j++ ) {
-                await sendMessage( relevantRoles[i], new ROLEMESSAGE(allRoles[j]) );
+                await sendMessage( roles.mediator, relevantRoles[i], new ROLEMESSAGE(allRoles[j]) );
             }
         }
         for ( let i=0; i<relevantRoles.length; i++ ) {
-            await sendMessage( relevantRoles[i], new READY() );
+            await sendMessage( roles.mediator, relevantRoles[i], new READY() );
         }
 
         receiveMessageServer.terminate();
