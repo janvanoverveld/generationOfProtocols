@@ -62,7 +62,6 @@
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
   },
   "files": [
-    "createMessageObjects.ts",
     "createStateObjects.ts",
     "createGlobalObjects.ts",
     "generate.ts"

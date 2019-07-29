@@ -1,4 +1,4 @@
-import {Parameter,Message,Transition,State,Protocol,RootObject} from './protocolTypeInterface';
+import {Transition,State,Protocol,RootObject} from './protocolTypeInterface';
 import * as ts from "typescript";
 
 function getEnumWithRoles(protocols:Protocol[]):string{

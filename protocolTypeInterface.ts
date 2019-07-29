@@ -1,18 +1,8 @@
-export interface Parameter {
-    name: string;
-    type: string;
-}
-
-export interface Message {
-    name: string;
-    parameters: Parameter[];
-}
-
 export interface Transition {
-    flow: string;
+    op:      string;
     message: string;
-    destination: string;
-    role:string;
+    role:    string;
+    next:    string;
 }
 
 export interface State {
@@ -27,7 +17,6 @@ export interface Protocol {
 }
 
 export interface RootObject {
-    messages: Message[];
     roles: string[];
     protocol: Protocol[];
 }

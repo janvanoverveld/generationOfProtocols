@@ -1,0 +1,11 @@
+module AliceBob;
+
+global protocol AliceBob(role Alice, role Bob) {
+    choice {
+        Add from Alice to Bob;
+        Res from Bob to Alice;
+        do AliceBob(Alice, Bob);
+    } or {
+        Bye from Alice to Bob;
+    }
+}

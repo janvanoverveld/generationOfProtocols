@@ -1,0 +1,29 @@
+module AliceBobFred;
+
+global protocol AliceBobFred(role Alice, role Bob, role Fred) {
+    choice {
+        Add from Alice to Bob;
+        Res from Bob to Alice;
+        do AliceBobFred(Alice, Bob, Fred);
+    } or {
+        Add from Fred to Bob;
+        Res from Bob to Fred;
+        do AliceBobFred(Alice, Bob, Fred);
+    } or {
+        Bye from Alice to Bob;
+        do Two(Fred, Bob);
+    } or {
+        Bye from Fred to Bob;
+        do Two(Alice, Bob);
+    }
+}
+
+aux global protocol Two(role Client, role Server) {
+    choice {
+        Add from Client to Server;
+        Res from Server to Client;
+        do Two(Client, Server);
+    } or {
+        Bye from Client to Server;
+    }
+}

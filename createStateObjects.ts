@@ -1,4 +1,4 @@
-import {Parameter,Message,Transition,State,Protocol,RootObject} from './protocolTypeInterface';
+import {Transition,State,Protocol,RootObject} from './protocolTypeInterface';
 import * as ts from "typescript";
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -13,7 +13,7 @@ const getFinalStateName        = (protocol:Protocol) => protocol.states.filter((
 const getFinalStateClass       = (protocol:Protocol) => `${protocol.role}_${getFinalStateName(protocol)}`;
 const getFinalStateInterface   = (protocol:Protocol) => `I${getFinalStateClass(protocol)}`;
 
-const cReceive  = 'receive';
+const cReceive  = 'recv';
 const cSend     = 'send';
 const cInitial  = 'initial';
 const cFinal    = 'final';
@@ -69,9 +69,9 @@ function createStateInterface(role:string,state:State,transitionMessageProps:str
     let receiveMultipleTypes:ts.TypeNode[]=[];
     state.transitions.forEach(
         (transition) => {
-            if ( transition.flow === cSend ) {
+            if ( transition.op === cSend ) {
                 // possible to send a message from this state and continue to a next state
-                const sendMethReturnTypeIdentifier = ts.createIdentifier(`I${role}_${transition.destination}`);
+                const sendMethReturnTypeIdentifier = ts.createIdentifier(`I${role}_${transition.next}`);
                 const sendMethReturnType = ts.createTypeReferenceNode(sendMethReturnTypeIdentifier, undefined);
                 const sendMethIdentifier = ts.createIdentifier(`${cSend}${transition.message.toUpperCase()}`);
                 const sendMethParName = ts.createIdentifier(transition.message.toLowerCase());
@@ -80,9 +80,9 @@ function createStateInterface(role:string,state:State,transitionMessageProps:str
                 const sendInterfaceMethod = ts.createMethodSignature( undefined, sendMethParameters, sendMethReturnType, sendMethIdentifier, undefined);
                 tsTypeElements.push(sendInterfaceMethod);
             }
-            if ( transition.flow === cReceive ) {
+            if ( transition.op === cReceive ) {
                 // message can be received to continue to next state
-                const receiveMethReturnTypeIdentifier = ts.createIdentifier(`I${role}_${transition.destination}`);
+                const receiveMethReturnTypeIdentifier = ts.createIdentifier(`I${role}_${transition.next}`);
                 receiveMultipleTypes.push( ts.createTypeReferenceNode(receiveMethReturnTypeIdentifier, undefined) );
             }
         }
@@ -191,7 +191,7 @@ function getMethods(role:string,state:State):ts.MethodDeclaration[]{
     let receiveMultipleTypes:ts.TypeReferenceNode[]=[];
     state.transitions.forEach(
         (transition) => {
-            if ( transition.flow === cSend ) {
+            if ( transition.op === cSend ) {
               methodId = ts.createIdentifier(`${cSend}${transition.message.toUpperCase()}`);
 
               const methodParameter=ts.createParameter(
@@ -203,7 +203,7 @@ function getMethods(role:string,state:State):ts.MethodDeclaration[]{
                 ts.createTypeReferenceNode(ts.createIdentifier(`${transition.message.toUpperCase()}`), undefined),
                 undefined);
 
-              const methodReturnState = ts.createTypeReferenceNode(ts.createIdentifier(`I${role}_${transition.destination}`), undefined);
+              const methodReturnState = ts.createTypeReferenceNode(ts.createIdentifier(`I${role}_${transition.next}`), undefined);
 
               const sendMessageProperty=ts.createIdentifier(`${transition.message.toLocaleLowerCase()}`);
               const currMethodBlock = ts.createBlock(
@@ -216,17 +216,17 @@ function getMethods(role:string,state:State):ts.MethodDeclaration[]{
                                       , sendMessageProperty
                                      ] )
                       ),
-                      ts.createReturn( ts.createNew(ts.createIdentifier(`${role}_${transition.destination}`), undefined, [sendMessageProperty]) )
+                      ts.createReturn( ts.createNew(ts.createIdentifier(`${role}_${transition.next}`), undefined, [sendMessageProperty]) )
                     ],
                     true
               );
 
               methods.push(ts.createMethod(undefined,undefined,undefined,methodId,undefined,undefined,[methodParameter],methodReturnState,currMethodBlock));
             }
-            if ( transition.flow === cReceive ) {
-              receiveMultipleTypes.push(ts.createTypeReferenceNode( ts.createIdentifier(`I${role}_${transition.destination}`), undefined));
-              toReceiveMessages.push(`${transition.message}`);
-              toCreateStates.push(`${role}_${transition.destination}`);
+            if ( transition.op === cReceive ) {
+              receiveMultipleTypes.push(ts.createTypeReferenceNode( ts.createIdentifier(`I${role}_${transition.next}`), undefined));
+              toReceiveMessages.push(`${transition.message.toUpperCase()}`);
+              toCreateStates.push(`${role}_${transition.next}`);
               toRoles.push(`${transition.role}`);
             }
         }
@@ -299,7 +299,7 @@ function getReceivedMessagesForState(stateName:string, states:State[]):string[]{
                state.transitions.forEach(
                    (t) => {
                        //console.log(`${stateName}  ${state.name}   ${t.destination}   ${t.flow}  ${t.message}  ${t.role}`);
-                       if ( t.destination === stateName ) {
+                       if ( t.next === stateName ) {
                            messages.push(t.message);
                        }
                    }
@@ -396,7 +396,7 @@ function getStateObjects( protocol:Protocol ):string{
     //stateReceivedMessages.forEach((val,key)=> console.log(`${key}  --  ${val}`));
 
     // ophalen van messages
-    const protocolMessages=getMessagesFromProtocol(protocol);
+    const protocolMessages=getMessagesFromProtocol(protocol).map((s)=>s.toUpperCase());
 
     // create import definitions
     let returnTxt=getImportDefinitions(protocolMessages);
