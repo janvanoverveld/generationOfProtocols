@@ -61,10 +61,10 @@ async function generateProjectFiles(sourceFilesLocation:string,protocolSpec:Root
 
 async function starter(){
 
-    //const sourceLocationExtra = sourceLocationAliceBob;
-    //const sourceProtocolJson = "exampleProtocol.json";
-    const sourceLocationExtra = sourceLocationAliceBobFred;
-    const sourceProtocolJson = "exampleProtocolFred.json";
+    const sourceLocationExtra = sourceLocationAliceBob;
+    const sourceProtocolJson = "exampleProtocol.json";
+    //const sourceLocationExtra = sourceLocationAliceBobFred;
+    //const sourceProtocolJson = "exampleProtocolFred.json";
 
     console.log(`start generatie  ${sourceLocationExtra}`);
 
