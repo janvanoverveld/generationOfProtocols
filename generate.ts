@@ -6,10 +6,19 @@ import * as fs from 'fs';
 import * as child from 'child_process';
 
 const sourceLocation             = 'sources/';
+
+const jsonAliceBob               = "AliceBob.json";
 const sourceLocationAliceBob     = 'sources/aliceBob/';
+
+const jsonAliceBobFred           = "AliceBobFred.json";
 const sourceLocationAliceBobFred = 'sources/aliceBobFred/';
+
+const jsonMatSvc                 = "MathSvc.json";
+const sourceLocationMathSvc      = 'sources/mathSvc/';
+
 const fileNameGlobalObjects      = 'globalObjects.src';
 const fileNameMessages           = 'Message.src';
+const fileNameExtraMessages      = 'ExtraMessages.src';
 
 function displayProtocol(proto:RootObject){
     console.log(proto.roles);
@@ -38,25 +47,41 @@ function writeFile (path:string, data:string, opts = 'utf8'):Promise<void> {
    );
 }
 
-async function generateProjectFiles(sourceFilesLocation:string,protocolSpec:RootObject,targetLocation:string){
-    const srcFiles = fs.readdirSync(sourceFilesLocation).filter((f)=>f.includes('.src'));
+async function generateProjectFiles(sourceFilesLocation:string,protocolSpec:RootObject,targetLocation:string,extraSourceFilesLoc:string){
+    let srcFiles = fs.readdirSync(sourceFilesLocation).filter((f)=>f.includes('.src'));
+    const extraMessagesTxt=await readFile(extraSourceFilesLoc + fileNameExtraMessages );
     for ( const srcFile of srcFiles ){
         console.log(`dit is ${srcFile} `);
         let textFromSource = await readFile( sourceFilesLocation + srcFile );
-        if ( srcFile === fileNameGlobalObjects){
+        if (srcFile === fileNameGlobalObjects){
             textFromSource += getEnumWithRoles(protocolSpec.protocol);
+        }
+        if (srcFile === fileNameMessages){
+            textFromSource += extraMessagesTxt;
         }
         let targetFileName = srcFile.search('json')>0?srcFile.replace('.src',''):srcFile.replace('.src','.ts');
         await writeFile(targetLocation + targetFileName,textFromSource);
     }
+    //
+    // process rest of extra files per protocol
+    srcFiles = fs.readdirSync(extraSourceFilesLoc).filter((f)=>f.includes('.src')&&f!==fileNameExtraMessages);
+    for ( const xSrcFile of srcFiles ){
+        console.log(`dit is ${xSrcFile} `);
+        let textFromSource = await readFile( extraSourceFilesLoc + xSrcFile );
+        let targetFileName = xSrcFile.search('json')>0?xSrcFile.replace('.src',''):xSrcFile.replace('.src','.ts');
+        await writeFile(targetLocation + targetFileName,textFromSource);
+    }
+
 }
 
 async function starter(){
 
     //const sourceLocationExtra = sourceLocationAliceBob;
-    //const sourceProtocolJson = "AliceBob.json";
+    //const sourceProtocolJson = jsonAliceBob;
     const sourceLocationExtra = sourceLocationAliceBobFred;
-    const sourceProtocolJson = "AliceBobFred.json";
+    const sourceProtocolJson = jsonAliceBobFred;
+    //const sourceLocationExtra = sourceLocationMathSvc;
+    //const sourceProtocolJson = jsonMatSvc;
 
     console.log(`start generatie  ${sourceLocationExtra}`);
 
@@ -76,9 +101,7 @@ async function starter(){
 
     displayProtocol(protoSpec);
 
-    await generateProjectFiles(sourceLocation,protoSpec,targetRepoName);
-
-    await generateProjectFiles(sourceLocationExtra,protoSpec,targetRepoName);
+    await generateProjectFiles(sourceLocation,protoSpec,targetRepoName,sourceLocationExtra);
 
     console.log(`starten met aanmaken klassen`);
     // creatie van de state klassen van de rollen

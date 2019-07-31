@@ -8,6 +8,4 @@ rem java -jar mpstpp.jar glob --project --json AliceBob.scr
 rem java -jar mpstpp.jar glob --project --json --out=<directory> AliceBob.scr
 rem java -jar mpstpp.jar glob --project --json AliceBob.scr
 rem java -jar mpstpp.jar glob --project --json AliceBob.scr > AliceBob.json
-
-
-java -jar mpstpp.jar glob --project --json MathSvc.scr 
+rem java -jar mpstpp.jar glob --project --json MathSvc.scr > MathSvc.json

@@ -1,0 +1,40 @@
+
+//
+//
+// extra custom classes
+//
+
+export class VAL extends Message {
+    constructor(public val: number) {
+        super(VAL.name);
+    }
+}
+
+export class ADD extends Message {
+    constructor(public add: number) {
+        super(ADD.name);
+    }
+}
+
+export class MUL extends Message {
+    constructor(public mul: number) {
+        super(MUL.name);
+    }
+}
+
+export class SUM extends Message {
+    constructor(public sum: number) {
+        super(SUM.name);
+    }
+}
+
+export class PRD extends Message {
+    constructor(public prd: number) {
+        super(PRD.name);
+    }
+}
+export class BYE extends Message {
+    constructor() {
+        super(BYE.name);
+    }
+}

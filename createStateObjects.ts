@@ -1,4 +1,4 @@
-import {Transition,State,Protocol,RootObject} from './protocolTypeInterface';
+import {Transition,State,Protocol,RootObject,StateInterface,objProperty,objMethod} from './protocolTypeInterface';
 import * as ts from "typescript";
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -13,14 +13,15 @@ const getFinalStateName        = (protocol:Protocol) => protocol.states.filter((
 const getFinalStateClass       = (protocol:Protocol) => `${protocol.role}_${getFinalStateName(protocol)}`;
 const getFinalStateInterface   = (protocol:Protocol) => `I${getFinalStateClass(protocol)}`;
 
-const cReceive  = 'recv';
-const cSend     = 'send';
-const cInitial  = 'initial';
-const cFinal    = 'final';
+const cReceive   = 'recv';
+const cSend      = 'send';
+const cInitial   = 'initial';
+const cFinal     = 'final';
+const cStateProp = 'state';
 const idResolve = ts.createIdentifier('resolve');
 const idReject  = ts.createIdentifier('reject');
 const idPromise = ts.createIdentifier('Promise');
-const idState   = ts.createIdentifier('state');
+const idState   = ts.createIdentifier(cStateProp);
 const idReceive = ts.createIdentifier(cReceive);
 
 // Map with key for every state and a array with the messages that can lead to the state
@@ -39,68 +40,98 @@ function getImportDefinitions(messages:string[]):string {
     importCode += getImportDefinition('./Message', messages );
     importCode += getImportDefinition('./sendMessage',['sendMessage']);
     importCode += getImportDefinition('./globalObjects',['roles','initialize','connectedRoles','OneTransitionPossibleException']);
-    return importCode + ts.sys.newLine;
+    return importCode;
 }
 
-function getAbstractInterface(role:string):string{
-    const stateProp = ts.createPropertySignature(undefined,ts.createIdentifier('state'),undefined,ts.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),undefined);
-    const abstractInterfaceDef = ts.createInterfaceDeclaration(undefined,undefined,ts.createIdentifier(`I${capitalize(role)}`),undefined,undefined,[stateProp]);
-    return printCode(abstractInterfaceDef) + ts.sys.newLine;
-}
-
-function createStateInterface(role:string,state:State,transitionMessageProps:string[]):string{
-  const interfaceName:ts.Identifier=ts.createIdentifier(`I${role}_${state.name}`);
-
-  const stateProp = ts.createPropertySignature( [ts.createModifier(ts.SyntaxKind.ReadonlyKeyword)], idState, undefined, ts.createLiteralTypeNode(ts.createStringLiteral(`${state.name}`)), undefined );
-  let tsTypeElements:ts.TypeElement[]=[];
-
-  tsTypeElements.push( stateProp );
-
-  for ( let i=0; i<transitionMessageProps.length; i++ ){
-    // a message is received, must be available as prop
-    const optionalProp  = (state.type===cInitial||transitionMessageProps.length>1)?ts.createToken(ts.SyntaxKind.QuestionToken):undefined;
-    const transPropName = ts.createIdentifier(transitionMessageProps[i].toLocaleLowerCase());
-    const transPropType = ts.createTypeReferenceNode(ts.createIdentifier(transitionMessageProps[i].toLocaleUpperCase()), undefined);
-    const transMsgProp  = ts.createPropertySignature( undefined, transPropName, optionalProp, transPropType, undefined );
-    tsTypeElements.push( transMsgProp );
-  }
-
-  if (state.transitions){
-    let receiveMultipleTypes:ts.TypeNode[]=[];
-    state.transitions.forEach(
-        (transition) => {
-            if ( transition.op === cSend ) {
-                // possible to send a message from this state and continue to a next state
-                const sendMethReturnTypeIdentifier = ts.createIdentifier(`I${role}_${transition.next}`);
-                const sendMethReturnType = ts.createTypeReferenceNode(sendMethReturnTypeIdentifier, undefined);
-                const sendMethIdentifier = ts.createIdentifier(`${cSend}${transition.message.toUpperCase()}`);
-                const sendMethParName = ts.createIdentifier(transition.message.toLowerCase());
-                const sendMethParType = ts.createTypeReferenceNode(ts.createIdentifier(transition.message.toUpperCase()),undefined);
-                const sendMethParameters = [ts.createParameter(undefined,undefined,undefined,sendMethParName,undefined,sendMethParType, undefined)];
-                const sendInterfaceMethod = ts.createMethodSignature( undefined, sendMethParameters, sendMethReturnType, sendMethIdentifier, undefined);
-                tsTypeElements.push(sendInterfaceMethod);
-            }
-            if ( transition.op === cReceive ) {
-                // message can be received to continue to next state
-                const receiveMethReturnTypeIdentifier = ts.createIdentifier(`I${role}_${transition.next}`);
-                receiveMultipleTypes.push( ts.createTypeReferenceNode(receiveMethReturnTypeIdentifier, undefined) );
-            }
-        }
-    );
-    if (receiveMultipleTypes.length > 0){
-        // messages can be received from this state, create a union type
-        const receiveMethReturnTypes = ts.createUnionTypeNode(receiveMultipleTypes);
-        // wrap it in a promise
-        const receivePromiseMethRetTypes = ts.createTypeReferenceNode(idPromise, [receiveMethReturnTypes]);
-        const interfaceMethod = ts.createMethodSignature( undefined, [], receivePromiseMethRetTypes, idReceive, undefined);
-        tsTypeElements.push(interfaceMethod);
+function getStateInterface(role:string,state:State,alleStates:State[]):StateInterface{
+    const transitionMessageProps=receivedMessages(state.name,alleStates);
+    let retInf:StateInterface={name:`I${role}_${state.name}`,props:[],methods:[],inherit:`I${role}`};
+    retInf.props.push({ name:cStateProp, optional: false, readonly: true, default:`${state.name}` });
+    for ( let i=0; i<transitionMessageProps.length; i++ ){
+      // a message is received, must be available as prop
+      const optionalProp  = (state.type===cInitial||transitionMessageProps.length>1)?true:false;
+      const transPropName = transitionMessageProps[i].toLocaleLowerCase();
+      const transPropType = transitionMessageProps[i].toLocaleUpperCase();
+      retInf.props.push({name:transPropName,optional:optionalProp,type:transPropType,readonly:false});
     }
-  }
+    if (state.transitions){
+      let receiveMultipleTypes:string[]=[];
+      state.transitions.forEach(
+          (transition) => {
+              if ( transition.op === cSend ) {
+                  // possible to send a message from this state and continue to a next state
+                  let method:objMethod={name:`${cSend}${transition.message.toUpperCase()}`,props:[],return:[],promise:false};
+                  method.return.push(`I${role}_${transition.next}`);
+                  method.props.push( {  name:     transition.message.toLowerCase()
+                                      , type:     transition.message.toUpperCase()
+                                      , optional: false
+                                      , readonly: false });
+                  retInf.methods.push(method);
+              }
+              if ( transition.op === cReceive ) {
+                  // message can be received to continue to next state
+                  receiveMultipleTypes.push( `I${role}_${transition.next}` );
+              }
+          }
+      );
+      if (receiveMultipleTypes.length > 0){
+          let method:objMethod={name:cReceive,props:[],return:[],promise:true};
+          method.return = receiveMultipleTypes;
+          retInf.methods.push(method);
+      }
+    }
+    return retInf;
+}
 
-  const inheritFromSuperInterface = ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [ts.createExpressionWithTypeArguments(undefined,ts.createIdentifier(`I${role}`))]);
-  const tsInterface = ts.createInterfaceDeclaration(undefined,undefined,interfaceName,undefined,[inheritFromSuperInterface], tsTypeElements );
+function getStateInterfaces(localProtocol:Protocol){
+    const stateInterfaces:StateInterface[]=[];
+    const abstractInterface:StateInterface={name:`I${localProtocol.role}`,props:[],methods:[]};
+    abstractInterface.props.push( { name:cStateProp, optional: false, readonly: false, type:'string'} );
+    stateInterfaces.push(abstractInterface);
+    localProtocol.states.forEach( (s) => stateInterfaces.push( getStateInterface( localProtocol.role, s, localProtocol.states) )  );
+    return stateInterfaces;
+}
 
-  return printCode(tsInterface) + ts.sys.newLine;
+function getInterfacesAsText(interfaces:StateInterface[]):string{
+    let returnText=ts.sys.newLine;
+    for ( const inf of interfaces ){
+        let tsTypeElements:ts.TypeElement[]=[];
+        for ( const prop of inf.props ){
+            const readonlyProp=prop.readonly?[ts.createModifier(ts.SyntaxKind.ReadonlyKeyword)]:undefined;
+            const optionalProp=prop.optional?ts.createToken(ts.SyntaxKind.QuestionToken):undefined;
+            let datatypeProp:ts.TypeNode|undefined=prop.type?ts.createTypeReferenceNode(ts.createIdentifier(prop.type), undefined):undefined;
+            if ( prop.default ) datatypeProp = ts.createLiteralTypeNode(ts.createStringLiteral( prop.default ));
+            tsTypeElements.push(
+                ts.createPropertySignature( readonlyProp
+                ,                           ts.createIdentifier(prop.name)
+                ,                           optionalProp
+                ,                           datatypeProp
+                ,                           undefined )
+            );
+        }
+        for ( const meth of inf.methods ){
+            let methParameters:ts.ParameterDeclaration[] = [];
+            for ( const methPar of meth.props ) {
+                const methParType=methPar.type?ts.createTypeReferenceNode(ts.createIdentifier(methPar.type),undefined):undefined;
+                methParameters.push(ts.createParameter(undefined,undefined,undefined,ts.createIdentifier(methPar.name),undefined,methParType,undefined));
+            }
+            let metReturnTypes:ts.TypeNode[]=[];
+            for ( const metReturnType of meth.return ){
+                metReturnTypes.push(ts.createTypeReferenceNode(ts.createIdentifier(metReturnType), undefined));
+            }
+            let metReturnType:ts.TypeNode=ts.createUnionTypeNode(metReturnTypes);
+            if ( meth.promise ){
+                metReturnType = ts.createTypeReferenceNode(idPromise, [metReturnType]);
+            }
+            const interfaceMethod = ts.createMethodSignature( undefined, methParameters, metReturnType, ts.createIdentifier(meth.name), undefined);
+            tsTypeElements.push(interfaceMethod);
+        }
+
+        const inheritFromSuperInterfaces = inf.inherit?[ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [ts.createExpressionWithTypeArguments(undefined,ts.createIdentifier(inf.inherit))])]:undefined;
+        const tsInterface = ts.createInterfaceDeclaration(undefined,undefined,ts.createIdentifier(inf.name),undefined,inheritFromSuperInterfaces, tsTypeElements );
+        returnText += printCode(tsInterface) + ts.sys.newLine + ts.sys.newLine;
+    }
+    return returnText + ts.sys.newLine;
 }
 
 function getStateAbstractClass(role:string):string{
@@ -400,17 +431,8 @@ function getStateObjects( protocol:Protocol ):string{
 
     // create import definitions
     let returnTxt=getImportDefinitions(protocolMessages);
-
-    // create top/abstract interface
-    returnTxt += getAbstractInterface(protocol.role) + ts.sys.newLine;
-
-    // create interfaces
-    protocol.states.forEach(
-        (state) => {
-            let transitionMessageProps=receivedMessages(state.name,protocol.states);
-            returnTxt+=createStateInterface(protocol.role, state, transitionMessageProps ) + ts.sys.newLine;
-        }
-    );
+    const stateInterfaces:StateInterface[]=getStateInterfaces(protocol);
+    returnTxt += getInterfacesAsText(stateInterfaces);
 
     // create abstract class
     returnTxt += getStateAbstractClass(protocol.role) + ts.sys.newLine;

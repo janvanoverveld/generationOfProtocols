@@ -1,0 +1,77 @@
+{
+    "roles":["Colin","Simon"],
+    "protocol":[
+        { "role":"Colin",
+            "states":[
+                {
+                    "name":"S1",
+                    "type":"initial",
+                    "transitions":[ { "op":"send","message":"Val","role":"Simon","next":"S2" },
+                                    { "op":"send","message":"Bye","role":"Simon","next":"S3" } ]
+                },
+                {
+                    "name":"S2",
+                    "type":"normal",
+                    "transitions":[{"op":"send", "message":"Add","role":"Simon","next":"S4"},
+                                   {"op":"send","message":"Mul","role":"Simon","next":"S5"} ]
+                },
+                {
+                    "name":"S3",
+                    "type":"final",
+                    "transitions":[]
+                },
+                {
+                    "name":"S4",
+                    "type":"normal",
+                    "transitions":[{"op":"recv","message":"Sum","role":"Simon","next":"S1"}]
+                },
+                {
+                    "name":"S5",
+                    "type":"normal",
+                    "transitions":[{"op":"recv","message":"Prd","role":"Simon","next":"S1"}]
+                }
+            ]
+        },
+        {
+            "role":"Simon",
+            "states":[
+                {
+                    "name":"S1",
+                    "type":"initial",
+                    "transitions":[{"op":"recv","message":"Val","role":"Colin","next":"S2"},
+                                   {"op":"recv","message":"Bye","role":"Colin","next":"S3"}]
+                },
+                {
+                    "name":"S2",
+                    "type":"normal",
+                    "transitions":[{"op":"recv","message":"Add","role":"Colin","next":"S4"},
+                        {"op":"recv","message":"Mul","role":"Colin","next":"S5"}]
+                },
+                {
+                    "name":"S3",
+                    "type":"final",
+                    "transitions":[
+                    ]
+                },
+                {
+                    "name":"S4",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"send","message":"Sum","role":"Colin","next":"S1"
+                        }
+                    ]
+                },
+                {
+                    "name":"S5",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"send","message":"Prd","role":"Colin","next":"S1"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
