@@ -22,7 +22,9 @@ export interface RootObject {
 }
 
 //
-// types for generating code
+//
+//
+// types for generating code INTERFACES
 //
 export type objProperty = {
     name: string;
@@ -44,4 +46,40 @@ export interface StateInterface{
     props:objProperty[];
     methods:objMethod[];
     inherit?:string;
+}
+
+//
+//
+// types for generating code CLASSES
+//
+export type objToReceiveMessages = {
+    message:string;
+    from:string;
+    nextState:string;
+}
+
+export type objReceiveMethod = {
+    name:string;
+    messages:objToReceiveMessages[];
+}
+
+export type objSendMethod = {
+    name:string;
+    msg:string
+    nextStateInterface:string;
+    nextStateClass:string;
+    from:string;
+    to:string;
+}
+
+export interface StateClass {
+    name:string;
+    stateType:string;
+    role:string;
+    extends:string;
+    implements:string;
+    regularProps:objProperty[];
+    constructorProps:objProperty[];
+    sendMethods:objSendMethod[];
+    receiveMethod?:objReceiveMethod;
 }

@@ -74,14 +74,29 @@ async function generateProjectFiles(sourceFilesLocation:string,protocolSpec:Root
 
 }
 
-async function starter(){
+async function starter(pars:string[]){
 
-    //const sourceLocationExtra = sourceLocationAliceBob;
-    //const sourceProtocolJson = jsonAliceBob;
-    const sourceLocationExtra = sourceLocationAliceBobFred;
-    const sourceProtocolJson = jsonAliceBobFred;
-    //const sourceLocationExtra = sourceLocationMathSvc;
-    //const sourceProtocolJson = jsonMatSvc;
+    let sourceLocationExtra = sourceLocationAliceBob;
+    let sourceProtocolJson = jsonAliceBob;
+
+    if ( pars.length > 1 ){
+        switch (pars[2]){
+            case 'A':
+                sourceLocationExtra = sourceLocationAliceBob;
+                sourceProtocolJson = jsonAliceBob;
+                break;
+            case 'B':
+                sourceLocationExtra = sourceLocationAliceBobFred;
+                sourceProtocolJson = jsonAliceBobFred;
+                break;
+            case 'C':
+                sourceLocationExtra = sourceLocationMathSvc;
+                sourceProtocolJson = jsonMatSvc;
+                break;
+            default:
+                break;
+        }
+    }
 
     console.log(`start generatie  ${sourceLocationExtra}`);
 
@@ -124,4 +139,4 @@ async function starter(){
     console.log('eind generatie');
 }
 
-starter();
+starter(process.argv);
