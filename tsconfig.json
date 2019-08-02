@@ -64,6 +64,8 @@
   "files": [
     "createStateObjects.ts",
     "createGlobalObjects.ts",
+    "stateInterfaces.ts",
+    "stateClasses",    
     "generate.ts"
     ]
 }

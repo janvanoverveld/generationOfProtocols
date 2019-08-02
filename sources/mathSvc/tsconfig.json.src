@@ -18,6 +18,7 @@
     "Colin.ts",
     "Simon.ts",
     "startColin.ts",
-    "startSimon.ts"
+    "startSimon.ts",
+    "start.ts"
     ]
 }

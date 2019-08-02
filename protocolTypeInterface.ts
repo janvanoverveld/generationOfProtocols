@@ -41,7 +41,7 @@ export type objMethod = {
     promise:boolean;
 }
 
-export interface StateInterface{
+export type StateInterface = {
     name:string;
     props:objProperty[];
     methods:objMethod[];
@@ -55,7 +55,10 @@ export interface StateInterface{
 export type objToReceiveMessages = {
     message:string;
     from:string;
-    nextState:string;
+    nextStateClass:string;
+    nextStateInterface:string;
+    positionNumberNextClassProps:number;
+    totalCountOfNextClassProps:number;
 }
 
 export type objReceiveMethod = {
@@ -72,7 +75,7 @@ export type objSendMethod = {
     to:string;
 }
 
-export interface StateClass {
+export type StateClass = {
     name:string;
     stateType:string;
     role:string;

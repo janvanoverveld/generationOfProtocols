@@ -1,76 +1,35 @@
-import {IBob, IBob_S1,IBob_S2,IBob_S3,IBob_S4,IBob_S5,IBob_S6,IBob_S7,IBob_S8,executeProtocol} from './Bob';
-import {RES} from './Message';
+import {IColin, IColin_S1, IColin_S2, IColin_S3, IColin_S4, IColin_S5, executeProtocol} from './Colin';
+import {VAL,ADD,MUL,SUM,PRD,BYE} from './Message';
 
-async function protocol(s1:IBob_S1):Promise<IBob_S7> {
-   let nextState:IBob = await s1.recv();
-   while ( true ){
-      console.log(`switching state ${nextState.state}`);
-      switch (nextState.state) {
-         case "S2": {
-            let s2 = <IBob_S2>nextState;
-            let add = s2.add;
-            let res = new RES( add.value1 + add.value2 );
-            console.log(`stuur ${res.name} ${res.sum} naar Alice `);
-            s1 = s2.sendRES(res);
-            nextState = await s1.recv();
-            break;
-         }
-         case "S3": {
-            let s3 = <IBob_S3>nextState;
-            let add = s3.add;
-            let res = new RES( add.value1 + add.value2 );
-            console.log(`stuur ${res.name} ${res.sum} naar fred `);
-            s1 = s3.sendRES(res);
-            nextState = await s1.recv();
-            break;
-         }
-         case "S4": {
-            let s4 = <IBob_S4>nextState;
-            let bye = s4.bye;
-            console.log(`bye ontvangen van Fred  ${nextState.state}`);
-            nextState = await s4.recv();
-            break;
-         }
-         case "S5": {
-            let s5 = <IBob_S5>nextState;
-            let bye = s5.bye;
-            console.log(`bye ontvangen van Alice    ${nextState.state}`);
-            nextState = await s5.recv();
-            break;
-         }
-         case "S6": {
-            let s6 = <IBob_S6>nextState;
-            let add = s6.add;
-            let res = new RES( add.value1 + add.value2 );
-            console.log(`stuur ${res.name} ${res.sum} naar Alice `);
-            let s4 = s6.sendRES(res);
-            nextState = await s4.recv();
-            break;
-         }
-         case "S8": {
-            let s8 = <IBob_S8>nextState;
-            let add = s8.add;
-            let res = new RES( add.value1 + add.value2 );
-            console.log(`stuur ${res.name} ${res.sum} naar Fred `);
-            let s5 = s8.sendRES(res);
-            nextState = await s5.recv();
-            break;
-         }
-         case "S7": {
-            console.log('in de DONE van Bob');
-            let sdone=<IBob_S7>nextState;
-            return new Promise(
-               resolve => resolve(sdone)
-            );
-         }
-         default: {
-         }
-      }
+async function protocol(s1:IColin_S1):Promise<IColin_S3> {
+   console.log('start colin');
+   for(let i=0;i<5;i++) {
+      // uitvoeren van een add
+      const val1 = new VAL(Math.floor(Math.random() * 8));
+      console.log(`val met waarden van ${val1.val}`);
+      const s2a = s1.sendVAL(val1);
+      const add=new ADD(Math.floor(Math.random()*8));
+      const s4 = s2a.sendADD(add);
+      s1 = await s4.recv();
+      if (s1.sum) console.log(`RES heeft waarde van ${s1.sum.sum}`);
+      //
+      // uitvoeren van een prod
+      const val2 = new VAL(Math.floor(Math.random() * 8));
+      console.log(`val met waarden van ${val2.val}`);
+      const s2b = s1.sendVAL(val2);
+      const mul=new MUL(Math.floor(Math.random()*8));
+      const s5 = s2b.sendMUL(mul);
+      s1 = await s5.recv();
+      if (s1.prd) console.log(`RES heeft waarde van ${s1.prd.prd}`);
+
    }
+   let bye=new BYE();
+   let done=s1.sendBYE(bye);
+   return new Promise( resolve => resolve( done ) );
 }
 
 async function start(){
-   await executeProtocol(protocol,'localhost',30002);
+   await executeProtocol(protocol,'localhost',30003);
 }
 
 start();
