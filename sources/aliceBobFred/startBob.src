@@ -7,26 +7,26 @@ async function protocol(s1:IBob_S1):Promise<IBob_S7> {
       console.log(`switching state ${nextState.state}`);
       switch (nextState.state) {
          case "S2": {
-            let s2 = <IBob_S2>nextState;
-            let add = s2.add;
-            let res = new RES( add.value1 + add.value2 );
+            const s2 = <IBob_S2>nextState;
+            const add = s2.add;
+            const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar Alice `);
-            s1 = s2.sendRES(res);
+            s1 = await s2.sendRES(res);
             nextState = await s1.recv();
             break;
          }
          case "S3": {
-            let s3 = <IBob_S3>nextState;
-            let add = s3.add;
-            let res = new RES( add.value1 + add.value2 );
+            const s3 = <IBob_S3>nextState;
+            const add = s3.add;
+            const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar fred `);
-            s1 = s3.sendRES(res);
+            s1 = await s3.sendRES(res);
             nextState = await s1.recv();
             break;
          }
          case "S4": {
-            let s4 = <IBob_S4>nextState;
-            let bye = s4.bye;
+            const s4 = <IBob_S4>nextState;
+            const bye = s4.bye;
             console.log(`bye ontvangen van Fred  ${nextState.state}`);
             nextState = await s4.recv();
             break;
@@ -39,26 +39,26 @@ async function protocol(s1:IBob_S1):Promise<IBob_S7> {
             break;
          }
          case "S6": {
-            let s6 = <IBob_S6>nextState;
-            let add = s6.add;
-            let res = new RES( add.value1 + add.value2 );
+            const s6 = <IBob_S6>nextState;
+            const add = s6.add;
+            const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar Alice `);
-            let s4 = s6.sendRES(res);
+            const s4 = await s6.sendRES(res);
             nextState = await s4.recv();
             break;
          }
          case "S8": {
-            let s8 = <IBob_S8>nextState;
-            let add = s8.add;
-            let res = new RES( add.value1 + add.value2 );
+            const s8 = <IBob_S8>nextState;
+            const add = s8.add;
+            const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar Fred `);
-            let s5 = s8.sendRES(res);
+            const s5 = await s8.sendRES(res);
             nextState = await s5.recv();
             break;
          }
          case "S7": {
             console.log('in de DONE van Bob');
-            let sdone=<IBob_S7>nextState;
+            const sdone=<IBob_S7>nextState;
             return new Promise(
                resolve => resolve(sdone)
             );

@@ -137,23 +137,39 @@ function getTextFromStateClassDefinition(stateClass:StateClass):string{
 
     for ( const sendM of stateClass.sendMethods ){
         const methodParameter = ts.createParameter(undefined,undefined,undefined,ts.createIdentifier(sendM.msg.toLowerCase()),undefined,ts.createTypeReferenceNode(ts.createIdentifier(sendM.msg.toUpperCase()), undefined),undefined);
-        const methodNextState = ts.createTypeReferenceNode(ts.createIdentifier(sendM.nextStateInterface), undefined);
+        const methodNextState = ts.createTypeReferenceNode(idPromise, [ ts.createTypeReferenceNode(ts.createIdentifier(sendM.nextStateInterface), undefined) ] );
         const sendMessage     = ts.createIdentifier( sendM.msg.toLowerCase() );
+        const resolvePromise  = ts.createArrowFunction(undefined,undefined
+                                , [ts.createParameter(undefined,undefined,undefined,ts.createIdentifier('resolve'),undefined,undefined,undefined)]
+                                , undefined, ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken)
+                                , ts.createCall( ts.createIdentifier('resolve'), undefined, [ ts.createNew( ts.createIdentifier(sendM.nextStateClass), undefined, undefined ) ] ) );
         const currMethodBlock = ts.createBlock(
               [ ts.createExpressionStatement( ts.createCall(ts.createPropertyAccess(ts.createSuper(),ts.createIdentifier('checkOneTransitionPossible') ),undefined, [] ) )
               , ts.createExpressionStatement(
-                ts.createCall( ts.createIdentifier('sendMessage')
-                             , undefined
-                             , [  ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(sendM.from.toLowerCase()))
-                                , ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(sendM.to.toLowerCase()))
-                                , sendMessage
-                               ] )
-                ),
-                ts.createReturn( ts.createNew(ts.createIdentifier(sendM.nextStateClass), undefined, undefined ) )
+                  ts.createAwait(
+                    ts.createCall( ts.createIdentifier('sendMessage')
+                                 , undefined
+                                 , [  ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(sendM.from.toLowerCase()))
+                                    , ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(sendM.to.toLowerCase()))
+                                    , sendMessage
+                                   ] )
+                    )
+                  )
+              , ts.createReturn( ts.createNew( idPromise, undefined, [resolvePromise] ) )
               ],
               true
         );
-        classMembers.push(ts.createMethod(undefined,undefined,undefined,ts.createIdentifier(sendM.name),undefined,undefined,[methodParameter],methodNextState,currMethodBlock));
+        classMembers.push(
+            ts.createMethod( undefined
+            ,                [ts.createModifier(ts.SyntaxKind.AsyncKeyword)]
+            ,                undefined
+            ,                ts.createIdentifier(sendM.name)
+            ,                undefined
+            ,                undefined
+            ,                [methodParameter]
+            ,                methodNextState
+            ,                currMethodBlock )
+        );
     }
 
     if (stateClass.receiveMethod){
@@ -182,22 +198,6 @@ function getTextFromStateClassDefinition(stateClass:StateClass):string{
             }
             const nextStateConstructorPar = ts.createTypeAssertion( ts.createTypeReferenceNode( ts.createIdentifier(retType.message.toUpperCase()), undefined ), ts.createIdentifier('msg') );
             nextStateConstructorParameters.push(ts.createParen(nextStateConstructorPar));
-
-
-//ts.createCall(idResolve, undefined, [ts.createNew(returnState, undefined,
-//    [ts.createIdentifier('undefined'),
-//     ts.createParen(
-//         ts.createTypeAssertion(ts.createTypeReferenceNode(ts.createIdentifier(retType.message.toUpperCase()), undefined),ts.createIdentifier('msg'))
-//     )
-//    ])
-//]
-//)
-
-
-//
-// how much parameters does the return state constructor have
-
-
             const resolveState = ts.createCall( idResolve, undefined, [ ts.createNew( returnState, undefined, nextStateConstructorParameters ) ]  );
             switchCaseClauses.push(ts.createCaseClause( caseBranch, [ ts.createBlock( [ ts.createExpressionStatement( resolveState ), ts.createBreak(undefined) ], true ) ] ) );
         }

@@ -6,10 +6,11 @@ async function protocol(s1:IBob_S1):Promise<IBob_S3> {
    while ( true ){
       switch (nextState.state) {
          case "S2": {
-            let add = nextState.add;
-            let res = new RES( add.value1 + add.value2 );
+            const add = nextState.add;
+            const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar Alice `);
-            s1 = (<IBob_S2>nextState).sendRES(res);
+            const s2 = <IBob_S2>nextState;
+            s1 = await s2.sendRES(res);
             nextState = await s1.recv();
             break;
          }

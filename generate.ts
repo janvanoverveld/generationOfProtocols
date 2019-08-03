@@ -5,8 +5,6 @@ import rimraf from 'rimraf';
 import * as fs from 'fs';
 import * as child from 'child_process';
 
-const sourceLocation             = 'sources/';
-
 const jsonAliceBob               = "AliceBob.json";
 const sourceLocationAliceBob     = 'sources/aliceBob/';
 
@@ -74,33 +72,11 @@ async function generateProjectFiles(sourceFilesLocation:string,protocolSpec:Root
 
 }
 
-async function starter(pars:string[]){
-
-    let sourceLocationExtra = sourceLocationAliceBob;
-    let sourceProtocolJson = jsonAliceBob;
-
-    if ( pars.length > 1 ){
-        switch (pars[2]){
-            case 'A':
-                sourceLocationExtra = sourceLocationAliceBob;
-                sourceProtocolJson = jsonAliceBob;
-                break;
-            case 'B':
-                sourceLocationExtra = sourceLocationAliceBobFred;
-                sourceProtocolJson = jsonAliceBobFred;
-                break;
-            case 'C':
-                sourceLocationExtra = sourceLocationMathSvc;
-                sourceProtocolJson = jsonMatSvc;
-                break;
-            default:
-                break;
-        }
-    }
-
-    console.log(`start generatie  ${sourceLocationExtra}`);
-
-    const protocolData=await readFile ( sourceLocationExtra+sourceProtocolJson);
+async function startGeneratieRepository(sourceProtocolJson:string, repoSourceLocation:string, startTargetRepo:boolean ):Promise<void>
+{
+    console.log(`generatie repository o.b.v. ${sourceProtocolJson}`);
+    const globalSourceLocation             = 'sources/';
+    const protocolData=await readFile ( repoSourceLocation+sourceProtocolJson);
     const protoSpec:RootObject = JSON.parse(protocolData);
 
     const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -114,11 +90,11 @@ async function starter(pars:string[]){
     fs.mkdirSync(targetRepoName);
     console.log(`${targetRepoName} is aangemaakt`);
 
-    displayProtocol(protoSpec);
+    //displayProtocol(protoSpec);
 
-    await generateProjectFiles(sourceLocation,protoSpec,targetRepoName,sourceLocationExtra);
+    await generateProjectFiles(globalSourceLocation,protoSpec,targetRepoName,repoSourceLocation);
 
-    console.log(`starten met aanmaken klassen`);
+    console.log(`Aanmaken klassen van de states`);
     // creatie van de state klassen van de rollen
     protoSpec.protocol.forEach(
         (proto) => {
@@ -127,16 +103,48 @@ async function starter(pars:string[]){
         }
     );
 
-    if ( false ) {
-        console.log('opstarten gegenereerde code mbv. start.ts via npm start')
+    if ( startTargetRepo ) {
+        console.log(`opstarten repository o.b.v. ${sourceProtocolJson}  en tonen output`);
         child.exec('npm start', {cwd:`${targetRepoName}`}
         , (err,data) => { if (err){ console.log(`err : ${err}`); }
-                          console.log('npm start uitgevoerd voor target repo, resultaat is:');
+                          console.log(`npm start uitgevoerd voor ${sourceProtocolJson}, het resultaat is:`);
                           console.log(data);
-                          console.log(`einde van het generatie process, inclusief opstarten nieuwe applicatie`); } );
+                          console.log(`einde van het generatie process, inclusief opstarten nieuwe applicatie`);
+                          return new Promise( (resolve) => resolve());
+                        } );
+    } else{
+        console.log(`einde van het generatie process o.b.v. ${sourceProtocolJson}`);
+        return new Promise( (resolve) => resolve());
     }
 
-    console.log('eind generatie');
+}
+
+async function starter(pars:string[]){
+    console.log(`${new Date()}  options are ${pars[2]} ${pars[3]}`);
+    let opstartenRepo:boolean=false;
+    if ( pars[3] && pars[3].toLowerCase() === 'j' ) opstartenRepo = true;
+    if ( pars[2] ){
+        switch (pars[2].toUpperCase()){
+            case 'A':
+                await startGeneratieRepository(jsonAliceBob, sourceLocationAliceBob, opstartenRepo );
+                break;
+            case 'B':
+                await startGeneratieRepository(jsonAliceBobFred, sourceLocationAliceBobFred, opstartenRepo );
+                break;
+            case 'C':
+                await startGeneratieRepository(jsonMatSvc, sourceLocationMathSvc, opstartenRepo );
+                break;
+            case '0':
+                await startGeneratieRepository(jsonAliceBob, sourceLocationAliceBob, opstartenRepo );
+                await startGeneratieRepository(jsonAliceBobFred, sourceLocationAliceBobFred, opstartenRepo );
+                await startGeneratieRepository(jsonMatSvc, sourceLocationMathSvc, opstartenRepo );
+            default:
+                console.log(`not a valid repository option --> ${pars[2]}`);
+            }
+    } else {
+        await startGeneratieRepository(jsonAliceBob, sourceLocationAliceBob, false );
+    }
+    console.log(`${new Date()}  eind`);
 }
 
 starter(process.argv);

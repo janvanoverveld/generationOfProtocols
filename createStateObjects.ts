@@ -172,7 +172,8 @@ function getStateObjects( protocol:Protocol ):string{
     protocol.states.forEach( (s) => {
         receivedMessagesInState.set(s.name,getReceivedMessagesForState(s.name,protocol.states));
     } );
-    receivedMessagesInState.forEach((val,key)=> console.log(`${key}  ----  ${val}`));
+    // debug
+    // receivedMessagesInState.forEach((val,key)=> console.log(`${key}  ----  ${val}`));
 
     let stateWithPossibleOriginStates:Map<string,string[]> = new Map();
     protocol.states.forEach( (s) => {
@@ -194,7 +195,7 @@ function getStateObjects( protocol:Protocol ):string{
     // get classes
     const stateClasses = getStateClassDefinitions(protocol,receivedMessagesInState,stateWithPossibleOriginStates);
     // debug show classes
-    showClasses(stateClasses);
+    //showClasses(stateClasses);
 
     // revert interfaces to text
     returnTxt += getInterfacesAsText(stateInterfaces);

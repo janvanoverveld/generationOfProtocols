@@ -40,7 +40,7 @@ function getStateInterface(role:string,state:State,messagesThatLedToState:string
           (transition) => {
               if ( transition.op === cSend ) {
                   // possible to send a message from this state and continue to a next state
-                  let method:objMethod={name:`${cSend}${transition.message.toUpperCase()}`,props:[],return:[],promise:false};
+                  let method:objMethod={name:`${cSend}${transition.message.toUpperCase()}`,props:[],return:[],promise:true};
                   method.return.push(`I${role}_${transition.next}`);
                   method.props.push( {  name:     transition.message.toLowerCase()
                                       , type:     transition.message.toUpperCase()
@@ -67,7 +67,7 @@ function getStateInterfaces(role:string, possibleStates:State[],stateWithMessage
     const stateInterfaces:StateInterface[]=[];
     const abstractInterface:StateInterface={name:`I${role}`,props:[],methods:[]};
     abstractInterface.props.push( { name:cStateProp, optional: false, readonly: false, type:'string'} );
-    stateInterfaces.push(abstractInterface);    
+    stateInterfaces.push(abstractInterface);
     possibleStates.forEach( (s) => {
             const originatedStates=getStatesThatPossibleLeadToThisState(s.name,stateWithPossibleOriginStates);
             stateInterfaces.push( getStateInterface( role, s, getReceivedMessagesInState(s.name,stateWithMessages ), originatedStates ) );
