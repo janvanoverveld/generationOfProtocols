@@ -8,7 +8,7 @@
     "cleanJs2": "rm js/*.js",
     "linkTS": "npm link typescript",
     "build": "tsc",
-    "genGen": "node js/generate.js",
+    "genGen": "node js/generate.js 0 j",
     "start": "npm run cleanJs1 && npm run linkTS && npm run build && npm run genGen"
   },
   "keywords": [
