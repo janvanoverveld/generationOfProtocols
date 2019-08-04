@@ -148,6 +148,7 @@ async function starter(pars:string[]){
                 await sleep ( 500 );
                 console.log(`startup generation of MatSvc from scribble paper`);
                 await startGeneratieRepository(jsonMatSvc, sourceLocationMathSvc, opstartenRepo );
+                break;
             default:
                 console.log(`not a valid repository option --> ${pars[2]}`);
             }
