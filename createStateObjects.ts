@@ -8,18 +8,10 @@ const resultFile = ts.createSourceFile("dummy.ts","",ts.ScriptTarget.Latest,fals
 const printer    = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 const printCode  = (node:ts.Node) => printer.printNode( ts.EmitHint.Unspecified, node, resultFile );
 
-const getInitialStateName      = (protocol:Protocol) => protocol.states.filter((state)=>state.type===cInitial)[0].name;
-const getInitialStateClass     = (protocol:Protocol) => `${protocol.role}_${getInitialStateName(protocol)}`;
-const getInitialStateInterface = (protocol:Protocol) => `I${getInitialStateClass(protocol)}`;
-const getFinalStateName        = (protocol:Protocol) => protocol.states.filter((state)=>state.type===cFinal)[0].name;
-const getFinalStateClass       = (protocol:Protocol) => `${protocol.role}_${getFinalStateName(protocol)}`;
-const getFinalStateInterface   = (protocol:Protocol) => `I${getFinalStateClass(protocol)}`;
-
 const cReceive   = 'recv';
 const cInitial   = 'initial';
 const cFinal     = 'final';
 const idResolve = ts.createIdentifier('resolve');
-const idReject  = ts.createIdentifier('reject');
 const idPromise = ts.createIdentifier('Promise');
 
 function getImportDefinition(fileName:string, importObjects:string[]):string {
@@ -111,7 +103,11 @@ function getMessagesFromProtocol(protocol:Protocol){
     return Array.from(new Set(messages));
 }
 
-function getExecuteProtocolFunction(protocol:Protocol){
+function getExecuteProtocolFunction(stateClasses:StateClass[]){
+    const initialStateInterface=ts.createIdentifier(stateClasses.filter((cl)=>cl.stateType===cInitial).map((cl)=>cl.implements).reduce((c,i)=>c+=i));
+    const finalStateInterface=ts.createIdentifier(stateClasses.filter((cl)=>cl.stateType===cFinal).map((cl)=>cl.implements).reduce((c,i)=>c+=i));
+    const initialStateClass=ts.createIdentifier(stateClasses.filter((cl)=>cl.stateType===cInitial).map((cl)=>cl.name).reduce((c,i)=>c+=i));
+    const role=stateClasses.filter((cl)=>cl.stateType===cInitial).map((cl)=>cl.extends).reduce((c,i)=>c+=i);
     const modifiers:ts.Modifier[]=[];
     modifiers.push(ts.createModifier(ts.SyntaxKind.ExportKeyword));
     modifiers.push(ts.createModifier(ts.SyntaxKind.AsyncKeyword));
@@ -119,11 +115,11 @@ function getExecuteProtocolFunction(protocol:Protocol){
     const parameterFunctionF=ts.createFunctionTypeNode(undefined
         , [ ts.createParameter(
             undefined,undefined,undefined
-            ,ts.createIdentifier(`${getInitialStateName(protocol)}`),undefined
-            ,ts.createTypeReferenceNode(ts.createIdentifier(`${getInitialStateInterface(protocol)}`),undefined),undefined
+            ,initialStateInterface,undefined
+            ,ts.createTypeReferenceNode(initialStateInterface,undefined),undefined
             )
           ]
-        , ts.createTypeReferenceNode(idPromise, [ts.createTypeReferenceNode(ts.createIdentifier(`${getFinalStateInterface(protocol)}`),undefined)])
+        , ts.createTypeReferenceNode(idPromise, [ts.createTypeReferenceNode(finalStateInterface,undefined)])
     );
 
     const parameters:ts.ParameterDeclaration[]=[];
@@ -141,17 +137,17 @@ function getExecuteProtocolFunction(protocol:Protocol){
         ts.createExpressionStatement(
             ts.createCall(
                 ts.createPropertyAccess(ts.createIdentifier('console'),ts.createIdentifier('log')),undefined,
-                [ ts.createTemplateExpression(ts.createTemplateHead(`${protocol.role} started `),[ts.createTemplateSpan(ts.createNew(ts.createIdentifier('Date'), undefined, []),ts.createTemplateTail(''))])]
+                [ ts.createTemplateExpression(ts.createTemplateHead(`${role} started `),[ts.createTemplateSpan(ts.createNew(ts.createIdentifier('Date'), undefined, []),ts.createTemplateTail(''))])]
         )
     ));
 
     const idDone=ts.createIdentifier('done');
-    statements.push(ts.createExpressionStatement(ts.createAwait(ts.createCall(ts.createIdentifier('initialize'), undefined, [ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(`${protocol.role.toLowerCase()}`)),idPort,idHost]))));
-    statements.push(ts.createVariableStatement(undefined,ts.createVariableDeclarationList([ ts.createVariableDeclaration(idDone,undefined,ts.createAwait(ts.createCall(idF, undefined, [ts.createNew(ts.createIdentifier(`${getInitialStateClass(protocol)}`), undefined, [])]))) ],ts.NodeFlags.AwaitContext | ts.NodeFlags.Let)));
+    statements.push(ts.createExpressionStatement(ts.createAwait(ts.createCall(ts.createIdentifier('initialize'), undefined, [ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(`${role.toLowerCase()}`)),idPort,idHost]))));
+    statements.push(ts.createVariableStatement(undefined,ts.createVariableDeclarationList([ ts.createVariableDeclaration(idDone,undefined,ts.createAwait(ts.createCall(idF, undefined, [ts.createNew(initialStateClass, undefined, [])]))) ],ts.NodeFlags.AwaitContext | ts.NodeFlags.Let)));
 
     const returnStatement:ts.ReturnStatement=ts.createReturn(
         ts.createNew(idPromise
-        , [ ts.createTypeReferenceNode( ts.createIdentifier(`${getFinalStateInterface(protocol)}`), undefined ) ],
+        , [ ts.createTypeReferenceNode( finalStateInterface, undefined ) ],
           [ ts.createArrowFunction(undefined,undefined,[ ts.createParameter(undefined,undefined,undefined,idResolve,undefined,undefined,undefined) ],undefined,ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),ts.createCall(idResolve, undefined, [ idDone ]))]
         )
     );
@@ -162,6 +158,13 @@ function getExecuteProtocolFunction(protocol:Protocol){
     const executeProtocolFunction:ts.FunctionDeclaration=ts.createFunctionDeclaration(undefined,modifiers,undefined,ts.createIdentifier('executeProtocol'),undefined,parameters,undefined,codeBlock);
 
     return printCode(executeProtocolFunction) + ts.sys.newLine;
+}
+
+function getInterfacePublicExportsAsText(stateInterfaces:StateInterface[]):string{
+    const exportsSpecifiers:ts.ExportSpecifier[]=[];
+    stateInterfaces.forEach( ( inf ) => exportsSpecifiers.push(ts.createExportSpecifier( undefined, ts.createIdentifier(inf.name) ) ) );
+    const exportDeclaration=ts.createExportDeclaration(undefined,undefined,ts.createNamedExports(exportsSpecifiers),undefined);
+    return printCode(exportDeclaration) + ts.sys.newLine + ts.sys.newLine;
 }
 
 function getStateObjects( protocol:Protocol ):string{
@@ -191,11 +194,11 @@ function getStateObjects( protocol:Protocol ):string{
     // get interfaces
     const stateInterfaces:StateInterface[]=getStateInterfaces(protocol.role, protocol.states, receivedMessagesInState,stateWithPossibleOriginStates);
     // debug, show interfaces
-    //showInterfaces(stateInterfaces);
+    // showInterfaces(stateInterfaces);
     // get classes
     const stateClasses = getStateClassDefinitions(protocol,receivedMessagesInState,stateWithPossibleOriginStates);
     // debug show classes
-    //showClasses(stateClasses);
+    // showClasses(stateClasses);
 
     // revert interfaces to text
     returnTxt += getInterfacesAsText(stateInterfaces);
@@ -207,16 +210,10 @@ function getStateObjects( protocol:Protocol ):string{
     returnTxt += getTextFromStateClasses(stateClasses);
 
     // create exports
-    let exportsSpecifiers:ts.ExportSpecifier[]=[];
-    exportsSpecifiers.push(ts.createExportSpecifier(undefined, ts.createIdentifier(`I${protocol.role}`)));
-    protocol.states.forEach(
-        (state) => exportsSpecifiers.push(ts.createExportSpecifier(undefined, ts.createIdentifier(`I${protocol.role}_${state.name}`)))
-    );
-
-    returnTxt += printCode(ts.createExportDeclaration(undefined,undefined,ts.createNamedExports(exportsSpecifiers),undefined) )  + ts.sys.newLine + ts.sys.newLine;
+    returnTxt += getInterfacePublicExportsAsText(stateInterfaces);
 
     // create executeProtocol function
-    returnTxt += getExecuteProtocolFunction(protocol);
+    returnTxt += getExecuteProtocolFunction(stateClasses);
 
     return returnTxt;
 }

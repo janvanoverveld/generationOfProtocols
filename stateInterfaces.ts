@@ -25,7 +25,7 @@ function getStatesThatPossibleLeadToThisState(state:string,originatedStatesMap:M
 }
 
 function getStateInterface(role:string,state:State,messagesThatLedToState:string[],originatedStates:string[]):StateInterface{
-    let retInf:StateInterface={name:`I${role}_${state.name}`,props:[],methods:[],inherit:`I${role}`};
+    let retInf:StateInterface={name:`I${role}_${state.name}`,props:[],methods:[],inherit:`I${role}`,stateType:state.type, role:role};
     retInf.props.push({ name:cStateProp, optional: false, readonly: true, default:state.name });
     for ( let i=0; i<messagesThatLedToState.length; i++ ){
       // a message is received, must be available as prop
@@ -65,7 +65,7 @@ function getStateInterface(role:string,state:State,messagesThatLedToState:string
 
 function getStateInterfaces(role:string, possibleStates:State[],stateWithMessages:Map<string,string[]>,stateWithPossibleOriginStates:Map<string,string[]>){
     const stateInterfaces:StateInterface[]=[];
-    const abstractInterface:StateInterface={name:`I${role}`,props:[],methods:[]};
+    const abstractInterface:StateInterface={name:`I${role}`,props:[],methods:[],stateType:'abstractState',role:role};
     abstractInterface.props.push( { name:cStateProp, optional: false, readonly: false, type:'string'} );
     stateInterfaces.push(abstractInterface);
     possibleStates.forEach( (s) => {
@@ -129,7 +129,7 @@ function showObjProperty(objProp:objProperty, extraChars?:string){
 function showInterfaces(interfaces:StateInterface[]){
     console.log(`show the interfaces`);
     for (const inf of interfaces){
-        console.log(`name interface:${inf.name}      inherit:${inf.inherit} `);
+        console.log(`name interface:${inf.name}   inherit:${inf.inherit}   stateType:${inf.stateType}   role:${inf.role}`);
         inf.props.forEach((p)=>showObjProperty(p));
         for ( const meth of inf.methods ){
             const returnObjects=meth.return.reduce((a,e)=>a+=e);

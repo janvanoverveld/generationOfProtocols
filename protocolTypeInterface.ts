@@ -46,6 +46,8 @@ export type StateInterface = {
     props:objProperty[];
     methods:objMethod[];
     inherit?:string;
+    stateType:string;
+    role:string;
 }
 
 //

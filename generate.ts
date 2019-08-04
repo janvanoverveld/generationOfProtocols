@@ -18,6 +18,10 @@ const fileNameGlobalObjects      = 'globalObjects.src';
 const fileNameMessages           = 'Message.src';
 const fileNameExtraMessages      = 'ExtraMessages.src';
 
+async function sleep(ms:number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function displayProtocol(proto:RootObject){
     console.log(proto.roles);
     for ( let p of proto.protocol  ){
@@ -46,10 +50,11 @@ function writeFile (path:string, data:string, opts = 'utf8'):Promise<void> {
 }
 
 async function generateProjectFiles(sourceFilesLocation:string,protocolSpec:RootObject,targetLocation:string,extraSourceFilesLoc:string){
+    console.log(`writing sourcefiles for ${extraSourceFilesLoc} `);
     let srcFiles = fs.readdirSync(sourceFilesLocation).filter((f)=>f.includes('.src'));
     const extraMessagesTxt=await readFile(extraSourceFilesLoc + fileNameExtraMessages );
     for ( const srcFile of srcFiles ){
-        console.log(`dit is ${srcFile} `);
+        // console.log(`writing sourcefile ${srcFile} `);
         let textFromSource = await readFile( sourceFilesLocation + srcFile );
         if (srcFile === fileNameGlobalObjects){
             textFromSource += getEnumWithRoles(protocolSpec.protocol);
@@ -64,7 +69,7 @@ async function generateProjectFiles(sourceFilesLocation:string,protocolSpec:Root
     // process rest of extra files per protocol
     srcFiles = fs.readdirSync(extraSourceFilesLoc).filter((f)=>f.includes('.src')&&f!==fileNameExtraMessages);
     for ( const xSrcFile of srcFiles ){
-        console.log(`dit is ${xSrcFile} `);
+        //console.log(`writing sourcefile ${xSrcFile} `);
         let textFromSource = await readFile( extraSourceFilesLoc + xSrcFile );
         let targetFileName = xSrcFile.search('json')>0?xSrcFile.replace('.src',''):xSrcFile.replace('.src','.ts');
         await writeFile(targetLocation + targetFileName,textFromSource);
@@ -102,7 +107,7 @@ async function startGeneratieRepository(sourceProtocolJson:string, repoSourceLoc
             writeFile(targetRepoName + proto.role + '.ts',classText);
         }
     );
-
+    var repoGeneratorResolver: () => void;
     if ( startTargetRepo ) {
         console.log(`opstarten repository o.b.v. ${sourceProtocolJson}  en tonen output`);
         child.exec('npm start', {cwd:`${targetRepoName}`}
@@ -110,13 +115,13 @@ async function startGeneratieRepository(sourceProtocolJson:string, repoSourceLoc
                           console.log(`npm start uitgevoerd voor ${sourceProtocolJson}, het resultaat is:`);
                           console.log(data);
                           console.log(`einde van het generatie process, inclusief opstarten nieuwe applicatie`);
-                          return new Promise( (resolve) => resolve());
+                          repoGeneratorResolver();
                         } );
     } else{
         console.log(`einde van het generatie process o.b.v. ${sourceProtocolJson}`);
         return new Promise( (resolve) => resolve());
     }
-
+    return new Promise ( ( resolve ) => repoGeneratorResolver=resolve );
 }
 
 async function starter(pars:string[]){
@@ -135,8 +140,13 @@ async function starter(pars:string[]){
                 await startGeneratieRepository(jsonMatSvc, sourceLocationMathSvc, opstartenRepo );
                 break;
             case '0':
+                console.log(`startup generation of Alice and Bob example`);
                 await startGeneratieRepository(jsonAliceBob, sourceLocationAliceBob, opstartenRepo );
+                await sleep ( 500 );
+                console.log(`startup generation of Fred, Alice and Bob example`);
                 await startGeneratieRepository(jsonAliceBobFred, sourceLocationAliceBobFred, opstartenRepo );
+                await sleep ( 500 );
+                console.log(`startup generation of MatSvc from scribble paper`);
                 await startGeneratieRepository(jsonMatSvc, sourceLocationMathSvc, opstartenRepo );
             default:
                 console.log(`not a valid repository option --> ${pars[2]}`);

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "node ./node_modules/typescript/bin/tsc",
-    "start": "npm install && npm run build && node js/start.js && cat log/startSimon.log"
+    "start": "npm install && npm run build && node js/start.js && cat log/startColin.log"
   },
   "keywords": ["states","generated code","Colin","Simon","protocol"],
   "author": "jvo",

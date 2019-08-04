@@ -15,7 +15,7 @@ async function protocol(s1:ISimon_S1):Promise<ISimon_S3> {
          case "S2": {
             const s2 = <ISimon_S2>nextState;
             const val = s2.val.val;
-            console.log(`waiting for nextstate in S2`);
+            //console.log(`waiting for nextstate in S2`);
             const nextActionState=await s2.recv();
             if (nextActionState.state === 'S4'){
                nextState = await nextActionState.sendSUM(new SUM(nextActionState.add.add+val));
