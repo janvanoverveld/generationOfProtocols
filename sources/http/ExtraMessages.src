@@ -1,0 +1,137 @@
+export class REQUESTL extends Message {
+   constructor(public value: string) {
+      super(REQUESTL.name);
+   }
+}
+
+export class HOST extends Message {
+   constructor(public value: string) {
+      super(HOST.name);
+   }
+}
+
+export class USERA extends Message {
+   constructor(public value: string) {
+      super(USERA.name);
+   }
+}
+
+export class ACCEPT extends Message {
+   constructor(public value: string) {
+      super(ACCEPT.name);
+   }
+}
+
+export class ACCEPTL extends Message {
+   constructor(public value: string) {
+      super(ACCEPTL.name);
+   }
+}
+
+export class ACCEPTE extends Message {
+   constructor(public value: string) {
+      super(ACCEPTE.name);
+   }
+}
+
+export class DNT extends Message {
+   constructor(public value: string) {
+      super(DNT.name);
+   }
+}
+
+export class CONNECTION extends Message {
+   constructor(public value: string) {
+      super(CONNECTION.name);
+   }
+}
+
+export class UPGRADEIR extends Message {
+   constructor(public value: string) {
+      super(UPGRADEIR.name);
+   }
+}
+
+export class BODY extends Message {
+   constructor(public value: string) {
+      super(BODY.name);
+   }
+}
+
+export class HTTPV extends Message {
+   constructor(public value: string) {
+      super(HTTPV.name);
+   }
+}
+
+export class HTTP200 extends Message {
+   constructor(public value: string) {
+      super(HTTP200.name);
+   }
+}
+
+export class HTTP404 extends Message {
+   constructor(public value: string) {
+      super(HTTP404.name);
+   }
+}
+
+export class DATE extends Message {
+   constructor(public value: string) {
+      super(DATE.name);
+   }
+}
+
+export class SERVER extends Message {
+   constructor(public value: string) {
+      super(SERVER.name);
+   }
+}
+
+export class STRICTTS extends Message {
+   constructor(public value: string) {
+      super(STRICTTS.name);
+   }
+}
+
+export class LASTM extends Message {
+   constructor(public value: string) {
+      super(LASTM.name);
+   }
+}
+
+export class ETAG extends Message {
+   constructor(public value: string) {
+      super(ETAG.name);
+   }
+}
+
+export class ACCEPTR extends Message {
+   constructor(public value: string) {
+      super(ACCEPTR.name);
+   }
+}
+
+export class CONTENTL extends Message {
+   constructor(public value: string) {
+      super(CONTENTL.name);
+   }
+}
+
+export class VARY extends Message {
+   constructor(public value: string) {
+      super(VARY.name);
+   }
+}
+
+export class CONTENTT extends Message {
+   constructor(public value: string) {
+      super(CONTENTT.name);
+   }
+}
+
+export class VIA extends Message {
+   constructor(public value: string) {
+      super(VIA.name);
+   }
+}

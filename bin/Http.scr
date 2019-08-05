@@ -1,0 +1,87 @@
+module Http;
+
+global protocol Http(role C, role S) {
+	do Request(C, S);
+	do Response(C, S);
+}
+
+aux global protocol Request(role C, role S) {
+	RequestL from C to S;
+	do RequestInner(C, S);
+}
+
+aux global protocol RequestInner(role C, role S) {
+   choice {
+     Host from C to S;
+     do RequestInner(C, S);
+   } or {
+     UserA from C to S;
+     do RequestInner(C, S);
+   } or {
+     Accept from C to S;
+     do RequestInner(C, S);
+   } or {
+     AcceptL from C to S;
+     do RequestInner(C, S);
+   } or {
+   	 AcceptE from C to S;
+     do RequestInner(C, S);
+   } or {
+     DNT from C to S;
+     do RequestInner(C, S);
+   } or {
+   	 Connection from C to S;
+     do RequestInner(C, S);
+   } or {
+   	 UpgradeIR from C to S;
+   	 do RequestInner(C, S);
+   } or {
+   	 Body from C to S;
+   }
+}
+
+aux global protocol Response(role C, role S) {
+	HttpV from S to C;
+	choice {
+		HTTP200 from S to C;
+	} or {
+		HTTP404 from S to C;
+	}
+    do ResponseInner(C,S);
+}
+
+aux global protocol ResponseInner(role C, role S) {
+	choice {
+		Date from S to C;
+        do ResponseInner(C,S);
+	} or {
+		Server from S to C;
+        do ResponseInner(C,S);
+	} or {
+		StrictTS from S to C;
+        do ResponseInner(C,S);
+	} or {
+		LastM from S to C;
+        do ResponseInner(C,S);
+	} or {
+		ETag from S to C;
+        do ResponseInner(C,S);
+	} or {
+		AcceptR from S to C;
+        do ResponseInner(C,S);
+	} or {
+		ContentL from S to C;
+        do ResponseInner(C,S);
+	} or {
+		Vary from S to C;
+        do ResponseInner(C,S);
+	} or {
+		ContentT from S to C;
+        do ResponseInner(C,S);
+	} or {
+		Via from S to C;
+        do ResponseInner(C,S);
+	} or {
+		Body from S to C;
+	}
+}

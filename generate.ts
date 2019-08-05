@@ -7,12 +7,12 @@ import * as child from 'child_process';
 
 const jsonAliceBob               = "AliceBob.json";
 const sourceLocationAliceBob     = 'sources/aliceBob/';
-
 const jsonAliceBobFred           = "AliceBobFred.json";
 const sourceLocationAliceBobFred = 'sources/aliceBobFred/';
-
 const jsonMatSvc                 = "MathSvc.json";
 const sourceLocationMathSvc      = 'sources/mathSvc/';
+const jsonHttp                   = "Http.json";
+const sourceLocationHttp         = 'sources/http/'
 
 const fileNameGlobalObjects      = 'globalObjects.src';
 const fileNameMessages           = 'Message.src';
@@ -139,6 +139,9 @@ async function starter(pars:string[]){
             case 'C':
                 await startGeneratieRepository(jsonMatSvc, sourceLocationMathSvc, opstartenRepo );
                 break;
+            case 'D':
+                await startGeneratieRepository(jsonHttp, sourceLocationHttp, opstartenRepo );
+                break;
             case '0':
                 console.log(`startup generation of Alice and Bob example`);
                 await startGeneratieRepository(jsonAliceBob, sourceLocationAliceBob, opstartenRepo );
@@ -148,9 +151,12 @@ async function starter(pars:string[]){
                 await sleep ( 500 );
                 console.log(`startup generation of MatSvc from scribble paper`);
                 await startGeneratieRepository(jsonMatSvc, sourceLocationMathSvc, opstartenRepo );
+                console.log(`startup generation of Http Example from the scribble paper`);
+                await startGeneratieRepository(jsonHttp, sourceLocationHttp, opstartenRepo );
                 break;
             default:
                 console.log(`not a valid repository option --> ${pars[2]}`);
+                break;
             }
     } else {
         await startGeneratieRepository(jsonAliceBob, sourceLocationAliceBob, false );
