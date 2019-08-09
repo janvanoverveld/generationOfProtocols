@@ -1,7 +1,7 @@
-import {IColin, IColin_S1, IColin_S2, IColin_S3, IColin_S4, IColin_S5, executeProtocol} from './Colin';
+import {IColin, Colin_Start, IColin_S2, Colin_End, IColin_S4, IColin_S5, executeProtocol} from './Colin';
 import {VAL,ADD,MUL,SUM,PRD,BYE} from './Message';
 
-async function protocol(s1:IColin_S1):Promise<IColin_S3> {
+async function protocol(s1:Colin_Start):Promise<Colin_End> {
    console.log('start colin');
    for(let i=0;i<5;i++) {
       // uitvoeren van een add
@@ -12,7 +12,7 @@ async function protocol(s1:IColin_S1):Promise<IColin_S3> {
       console.log(`Stuur ADD met waarden van ${add.add}`);
       const s4 = await s2a.sendADD(add);
       s1 = await s4.recv();
-      if (s1.sum) console.log(`RES heeft waarde van ${s1.sum.sum}`);
+      console.log(`RES heeft waarde van ${(<SUM>s1.message).sum}`);
       //
       // uitvoeren van een prod
       const val2 = new VAL(Math.floor(Math.random() * 8));
@@ -22,7 +22,7 @@ async function protocol(s1:IColin_S1):Promise<IColin_S3> {
       console.log(`Stuur MUL met waarden van ${mul.mul}`);
       const s5 = await s2b.sendMUL(mul);
       s1 = await s5.recv();
-      if (s1.prd) console.log(`RES heeft waarde van ${s1.prd.prd}`);
+      console.log(`RES heeft waarde van ${(<PRD>s1.message).prd}`);
 
    }
    let bye=new BYE();

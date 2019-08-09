@@ -50,7 +50,7 @@ function getCheckOneTransitionPossibleForReceive(){
 
 function createStateClassDefinition(role:string,state:State,receivedMsgPerStateMap:Map<string,string[]>,originatedStates:string[]):StateClass{
    let stateClass:StateClass={name:`${role}_${state.name}`, stateType:state.type, role:role, extends:role,implements:`I${role}_${state.name}`,regularProps:[],constructorProps:[],sendMethods:[]};
-   stateClass.regularProps.push({name:cStateProp,optional:false,readonly:true,default:state.name});
+   //cd stateClass.regularProps.push({name:cStateProp,optional:false,readonly:true,default:state.name});
    const transitionMessageProps=getReceivedMessagesInState(state.name,receivedMsgPerStateMap);
    for ( let i=0; i<transitionMessageProps.length;i++){
       const propName     = `${transitionMessageProps[i].toLowerCase()}`;
@@ -119,15 +119,38 @@ function getTextFromStateClassDefinition(stateClass:StateClass):string{
 
     // creating constructor
     let classParameters:ts.ParameterDeclaration[]=[];
+    let propPresent=false;
+    let propOptional=false;
     for ( const prop of stateClass.constructorProps ){
+       propPresent=true;
+       propOptional=prop.optional;
        const optionalProp=prop.optional?ts.createToken(ts.SyntaxKind.QuestionToken):undefined;
-       const propDataType=prop.type?ts.createTypeReferenceNode(ts.createIdentifier(prop.type), undefined):undefined;
        classParameters.push(
-          ts.createParameter( undefined, [ts.createModifier(ts.SyntaxKind.PublicKeyword)], undefined, ts.createIdentifier(prop.name), optionalProp, propDataType, undefined )
+          ts.createParameter( undefined, undefined, undefined, ts.createIdentifier('messageFrom'), optionalProp, ts.createTypeReferenceNode(ts.createIdentifier('roles'), undefined), undefined )
        );
+       classParameters.push(
+          ts.createParameter( undefined, undefined, undefined, ts.createIdentifier('messageType'), optionalProp, ts.createTypeReferenceNode(ts.createIdentifier('messages'), undefined), undefined )
+       );
+       classParameters.push(
+          ts.createParameter( undefined, undefined, undefined, ts.createIdentifier('message'), optionalProp, ts.createTypeReferenceNode(ts.createIdentifier('Message'), undefined), undefined )
+       );
+       break;
     }
     let constructorBlockCode:ts.Statement[] = [];
     constructorBlockCode.push(ts.createExpressionStatement(ts.createCall(ts.createSuper(), undefined, [])));
+    if (propPresent){
+        let msgFrom:ts.Statement = ts.createExpressionStatement( ts.createBinary(ts.createPropertyAccess(ts.createSuper(),ts.createIdentifier('messageFrom')),ts.createToken(ts.SyntaxKind.FirstAssignment),ts.createIdentifier('messageFrom')) );
+        let msgType:ts.Statement = ts.createExpressionStatement( ts.createBinary(ts.createPropertyAccess(ts.createSuper(),ts.createIdentifier('messageType')),ts.createToken(ts.SyntaxKind.FirstAssignment),ts.createIdentifier('messageType')) );
+        let message:ts.Statement = ts.createExpressionStatement( ts.createBinary(ts.createPropertyAccess(ts.createSuper(),ts.createIdentifier('message')),ts.createToken(ts.SyntaxKind.FirstAssignment),ts.createIdentifier('message')) );
+        if ( propOptional ){
+            msgFrom = ts.createIf(ts.createIdentifier('messageFrom'),msgFrom,undefined);
+            msgType = ts.createIf(ts.createIdentifier('messageType'),msgType,undefined);
+            message = ts.createIf(ts.createIdentifier('message'),message,undefined);
+        }
+        constructorBlockCode.push(msgFrom);
+        constructorBlockCode.push(msgType);
+        constructorBlockCode.push(message);
+    }
     if (stateClass.stateType===cFinal){
        constructorBlockCode.push(ts.createExpressionStatement(ts.createCall(ts.createPropertyAccess(ts.createIdentifier('receiveMessageServer'),ts.createIdentifier('terminate')),undefined,[])));
     }
@@ -191,13 +214,17 @@ function getTextFromStateClassDefinition(stateClass:StateClass):string{
               , ts.createPropertyAccess( ts.createIdentifier('roles'), ts.createIdentifier(retType.from.toLowerCase() ) ) );
             const returnState = ts.createIdentifier(retType.nextStateClass);
             const nextStateConstructorParameters:ts.Expression[]=[];
-            if ( retType.totalCountOfNextClassProps > 1 && retType.positionNumberNextClassProps > 0 ){
-                for ( let i=1; i<retType.totalCountOfNextClassProps; i++){
-                    nextStateConstructorParameters.push(ts.createIdentifier('undefined'));
-                }
-            }
-            const nextStateConstructorPar = ts.createTypeAssertion( ts.createTypeReferenceNode( ts.createIdentifier(retType.message.toUpperCase()), undefined ), ts.createIdentifier('msg') );
-            nextStateConstructorParameters.push(ts.createParen(nextStateConstructorPar));
+            //if ( retType.totalCountOfNextClassProps > 1 && retType.positionNumberNextClassProps > 0 ){
+            //    for ( let i=1; i<retType.totalCountOfNextClassProps; i++){
+            //        nextStateConstructorParameters.push(ts.createIdentifier('undefined'));
+            //    }
+            //}
+            //const nextStateConstructorPar = ts.createTypeAssertion( ts.createTypeReferenceNode( ts.createIdentifier(retType.message.toUpperCase()), undefined ), ts.createIdentifier('msg') );
+            //nextStateConstructorParameters.push(ts.createParen(nextStateConstructorPar));
+            nextStateConstructorParameters.push(ts.createPropertyAccess(ts.createIdentifier('msg'),ts.createIdentifier('from')));
+            nextStateConstructorParameters.push(ts.createPropertyAccess(ts.createIdentifier('messages'),ts.createIdentifier(retType.message.toUpperCase())));
+            nextStateConstructorParameters.push(ts.createIdentifier('msg'));
+
             const resolveState = ts.createCall( idResolve, undefined, [ ts.createNew( returnState, undefined, nextStateConstructorParameters ) ]  );
             switchCaseClauses.push(ts.createCaseClause( caseBranch, [ ts.createBlock( [ ts.createExpressionStatement( resolveState ), ts.createBreak(undefined) ], true ) ] ) );
         }

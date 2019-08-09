@@ -1,7 +1,11 @@
-import {IC_S1,IC_S3,executeProtocol, IC_S6} from './C';
+import {C_Start,IC_S3,IC_S5, executeProtocol, C_End, messages} from './C';
 import {REQUESTL,HOST,USERA,ACCEPT,ACCEPTL,ACCEPTE,DNT,CONNECTION,UPGRADEIR,BODY,HTTPV,HTTP200,HTTP404,DATE,SERVER,STRICTTS,LASTM,ETAG,ACCEPTR,CONTENTL,VARY,CONTENTT,VIA} from './Message';
 
-async function protocol(s1:IC_S1):Promise<IC_S6> {
+export async function sleep(ms:number) {
+   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function protocol(s1:C_Start):Promise<C_End> {
    let s2 = await s1.sendREQUESTL(new REQUESTL('request tl'));
    s2 = await s2.sendHOST(new DNT('localhost'));
    s2 = await s2.sendUSERA(new UPGRADEIR('mr. client'));
@@ -13,17 +17,16 @@ async function protocol(s1:IC_S1):Promise<IC_S6> {
    s2 = await s2.sendDNT(new DNT('dnter'));
    const s3 = await s2.sendBODY(new BODY('the body of the message'));
    const s4 = await s3.recv();
-   console.log(`The received http version from the client is : ${s4.httpv.value}`);
+   console.log(`The received http version from the client is : ${(<HTTPV>s4.message).value}`);
    const s5 = await s4.recv();
-   if (s5.http200) console.log(`The http response gave following code : ${s5.http200.value}`);
-   console.log(`http values : ${s5.acceptr} ${s5.contentl} ${s5.date} ${s5.etag} ${s5.http200} ${s5.http404} ${s5.lastm} ${s5.server} ${s5.strictts} ${s5.vary} ${s5.via}`);
+   console.log(`The http response gave following code : ${(<HTTP200>s5.message).value}`);
    let s5s6 = await s5.recv();
-   while (s5s6.state !== 'S6'){
-      console.log(`a ${s5s6.state} received`);
-      s5s6 = await s5s6.recv();
+   while (s5s6.messageType !== messages.BODY){
+      console.log(`a ${s5s6.messageType} received from ${s5s6.messageFrom}`);
+      s5s6 = await (<IC_S5>s5s6).recv();
    }
    const s6 = s5s6;
-   console.log(`eindstate heeft body : ${s6.body.value}`);
+   console.log(`eindstate heeft body : ${(<BODY>s6.message).value}`);
    return new Promise( resolve => resolve( s6 ) );
 }
 

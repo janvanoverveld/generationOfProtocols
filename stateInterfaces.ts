@@ -9,7 +9,8 @@ const printCode  = (node:ts.Node) => printer.printNode( ts.EmitHint.Unspecified,
 const cReceive   = 'recv';
 const cSend      = 'send';
 const cInitial   = 'initial';
-const cStateProp = 'state';
+//const cStateProp = 'state';
+const cAbstractState = 'abstractState';
 const idPromise = ts.createIdentifier('Promise');
 
 function getReceivedMessagesInState(state:string,stateMessageMap:Map<string,string[]>):string[]{
@@ -26,7 +27,7 @@ function getStatesThatPossibleLeadToThisState(state:string,originatedStatesMap:M
 
 function getStateInterface(role:string,state:State,messagesThatLedToState:string[],originatedStates:string[]):StateInterface{
     let retInf:StateInterface={name:`I${role}_${state.name}`,props:[],methods:[],inherit:`I${role}`,stateType:state.type, role:role};
-    retInf.props.push({ name:cStateProp, optional: false, readonly: true, default:state.name });
+    //retInf.props.push({ name:cStateProp, optional: false, readonly: true, default:state.name });
     for ( let i=0; i<messagesThatLedToState.length; i++ ){
       // a message is received, must be available as prop
       const optionalProp  = (state.type===cInitial||originatedStates.length>1)?true:false;
@@ -65,8 +66,8 @@ function getStateInterface(role:string,state:State,messagesThatLedToState:string
 
 function getStateInterfaces(role:string, possibleStates:State[],stateWithMessages:Map<string,string[]>,stateWithPossibleOriginStates:Map<string,string[]>){
     const stateInterfaces:StateInterface[]=[];
-    const abstractInterface:StateInterface={name:`I${role}`,props:[],methods:[],stateType:'abstractState',role:role};
-    abstractInterface.props.push( { name:cStateProp, optional: false, readonly: false, type:'string'} );
+    const abstractInterface:StateInterface={name:`I${role}`,props:[],methods:[],stateType:cAbstractState,role:role};
+    //abstractInterface.props.push( { name:cStateProp, optional: false, readonly: false, type:'string'} );
     stateInterfaces.push(abstractInterface);
     possibleStates.forEach( (s) => {
             const originatedStates=getStatesThatPossibleLeadToThisState(s.name,stateWithPossibleOriginStates);
@@ -76,23 +77,49 @@ function getStateInterfaces(role:string, possibleStates:State[],stateWithMessage
     return stateInterfaces;
 }
 
+function getMessageProperties(optional:boolean):ts.TypeElement[]{
+    const optionalProp=optional?ts.createToken(ts.SyntaxKind.QuestionToken):undefined;
+    const elements:ts.TypeElement[]=[];
+    elements.push(
+            ts.createPropertySignature( undefined
+            ,                           ts.createIdentifier('messageFrom')
+            ,                           optionalProp
+            ,                           ts.createTypeReferenceNode(ts.createIdentifier('roles'), undefined)
+            ,                           undefined )
+    );
+    elements.push(
+            ts.createPropertySignature( undefined
+            ,                           ts.createIdentifier('messageType')
+            ,                           optionalProp
+            ,                           ts.createTypeReferenceNode(ts.createIdentifier('messages'), undefined)
+            ,                           undefined )
+    );
+    elements.push(
+            ts.createPropertySignature( undefined
+            ,                           ts.createIdentifier('message')
+            ,                           optionalProp
+            ,                           ts.createTypeReferenceNode(ts.createIdentifier('Message'), undefined)
+            ,                           undefined )
+    );
+    return elements;
+}
+
 function getInterfacesAsText(interfaces:StateInterface[]):string{
     let returnText=ts.sys.newLine;
     for ( const inf of interfaces ){
         let tsTypeElements:ts.TypeElement[]=[];
-        for ( const prop of inf.props ){
-            const readonlyProp=prop.readonly?[ts.createModifier(ts.SyntaxKind.ReadonlyKeyword)]:undefined;
-            const optionalProp=prop.optional?ts.createToken(ts.SyntaxKind.QuestionToken):undefined;
-            let datatypeProp:ts.TypeNode|undefined=prop.type?ts.createTypeReferenceNode(ts.createIdentifier(prop.type), undefined):undefined;
-            if ( prop.default ) datatypeProp = ts.createLiteralTypeNode(ts.createStringLiteral( prop.default ));
-            tsTypeElements.push(
-                ts.createPropertySignature( readonlyProp
-                ,                           ts.createIdentifier(prop.name)
-                ,                           optionalProp
-                ,                           datatypeProp
-                ,                           undefined )
-            );
-        }
+        // adding message properties to the abstract interface
+        if (inf.stateType === cAbstractState ) tsTypeElements.push(...getMessageProperties(false));
+        //for ( const prop of inf.props ){
+            //const readonlyProp=prop.readonly?[ts.createModifier(ts.SyntaxKind.ReadonlyKeyword)]:undefined;
+            //const optionalProp=prop.optional?ts.createToken(ts.SyntaxKind.QuestionToken):undefined;
+            //let datatypeProp:ts.TypeNode|undefined=prop.type?ts.createTypeReferenceNode(ts.createIdentifier(prop.type), undefined):undefined;
+            //if ( prop.default ) datatypeProp = ts.createLiteralTypeNode(ts.createStringLiteral( prop.default ));
+            //if ( !prop.optional ) {
+            //    tsTypeElements.concat(getMessageProperties(prop.optional));
+            //    break;
+            //}
+        //}
         for ( const meth of inf.methods ){
             let methParameters:ts.ParameterDeclaration[] = [];
             for ( const methPar of meth.props ) {
