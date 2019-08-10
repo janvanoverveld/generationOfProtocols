@@ -1,4 +1,4 @@
-import {Transition,State,Protocol,RootObject,StateInterface,objProperty,objMethod,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
+import {message,receivedMessagesInState,Transition,State,Protocol,RootObject,StateInterface,objProperty,objMethod,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
 import {getStateInterfaces,getInterfacesAsText,showInterfaces} from './stateInterfaces';
 import {getTextFromStateClasses,getStateClassDefinitions, showClasses} from './stateClasses';
 import * as ts from "typescript";
@@ -65,16 +65,17 @@ function getStateAbstractClass(role:string):string{
 
   const msgFrom:ts.ClassElement = ts.createProperty(undefined,[ts.createModifier(ts.SyntaxKind.PublicKeyword)],ts.createIdentifier('messageFrom'),undefined,undefined, ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(role.toLowerCase())) );
   const msgType:ts.ClassElement = ts.createProperty(undefined,[ts.createModifier(ts.SyntaxKind.PublicKeyword)],ts.createIdentifier('messageType'),undefined,undefined, ts.createPropertyAccess(ts.createIdentifier('messages'),ts.createIdentifier(cNoMessage)));
-  const msg:ts.ClassElement     = ts.createProperty(undefined,[ts.createModifier(ts.SyntaxKind.PublicKeyword)],ts.createIdentifier('message'),undefined,undefined,ts.createNew(ts.createIdentifier(cNoMessage), undefined, []));
+  const msg:ts.ClassElement     = ts.createProperty(undefined,[ts.createModifier(ts.SyntaxKind.PublicKeyword)],ts.createIdentifier('message'),ts.createToken(ts.SyntaxKind.QuestionToken),ts.createTypeReferenceNode(ts.createIdentifier('Message'), undefined),ts.createNew(ts.createIdentifier(cNoMessage), undefined, []));
 
   classMembers = [ msgFrom, msgType, msg, constructor, ts.createSemicolonClassElement(), chkOneTransition ];
-  const abstractClass = ts.createClassDeclaration( undefined, [ts.createModifier(ts.SyntaxKind.AbstractKeyword)], ts.createIdentifier(role), undefined, undefined, classMembers );
+  const implementsInterface = [ ts.createHeritageClause(ts.SyntaxKind.FirstFutureReservedWord, [ ts.createExpressionWithTypeArguments( undefined, ts.createIdentifier(`I${capitalize(role)}`) ) ]) ];
+  const abstractClass = ts.createClassDeclaration( undefined, [ts.createModifier(ts.SyntaxKind.AbstractKeyword)], ts.createIdentifier(role), undefined, implementsInterface, classMembers );
 
   return printCode(abstractClass) + ts.sys.newLine;
 }
 
-function getReceivedMessagesForState(stateName:string, states:State[]):string[]{
-    let messages:string[]=[];
+function getReceivedMessagesForState(stateName:string, states:State[]):message[]{
+    let messages:message[]=[];
     states.forEach(
         (state) => {
            if (state.transitions)
@@ -82,7 +83,7 @@ function getReceivedMessagesForState(stateName:string, states:State[]):string[]{
                    (t) => {
                        //console.log(`${stateName}  ${state.name}   ${t.next }   ${t.op}  ${t.message}  ${t.role}`);
                        if ( t.next === stateName && t.op === cReceive ) {
-                           messages.push(t.message);
+                           messages.push({name:t.message,from:t.role});
                        }
                    }
                );
@@ -207,7 +208,7 @@ function getStateObjects( protocol:Protocol ):string{
     console.log(`start getStateObjects  ${protocol.role}`);
 
     // get states and messages that led to the state (these will be properties), Map with key for every state and a array with the messages that can lead to the state
-    let receivedMessagesInState:Map<string,string[]> = new Map();
+    let receivedMessagesInState:receivedMessagesInState = new Map();
     protocol.states.forEach( (s) => {
         receivedMessagesInState.set(s.name,getReceivedMessagesForState(s.name,protocol.states));
     } );
@@ -233,12 +234,12 @@ function getStateObjects( protocol:Protocol ):string{
     // get interfaces
     const stateInterfaces:StateInterface[]=getStateInterfaces(protocol.role, protocol.states, receivedMessagesInState,stateWithPossibleOriginStates);
     // debug, show interfaces
-    //showInterfaces(stateInterfaces);
+    showInterfaces(stateInterfaces);
 
     // get classes
     const stateClasses = getStateClassDefinitions(protocol,receivedMessagesInState,stateWithPossibleOriginStates);
     // debug show classes
-    //showClasses(stateClasses);
+    showClasses(stateClasses);
 
     // revert interfaces to text
     returnTxt += getInterfacesAsText(stateInterfaces);
@@ -257,10 +258,12 @@ function getStateObjects( protocol:Protocol ):string{
 
     // create exports
     const publicExports:string[]=[];
-    stateInterfaces.forEach( ( inf ) => publicExports.push(inf.name) );
+    stateInterfaces.forEach( ( inf ) => {
+        if (inf.stateType!==cInitial && inf.stateType !== cFinal ) publicExports.push(inf.name);
+    }  );
     publicExports.push(cMessageEnum);
     publicExports.push(getStartInterface(protocol.role));
-    publicExports.push(getEndInterface(protocol.role));    
+    publicExports.push(getEndInterface(protocol.role));
     publicExports.push(cExecutePro);
     publicExports.push('roles');
 

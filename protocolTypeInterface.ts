@@ -29,6 +29,7 @@ export interface RootObject {
 export type objProperty = {
     name: string;
     type?: string;
+    from: string;
     optional: boolean;
     readonly: boolean;
     default?: string;
@@ -88,3 +89,12 @@ export type StateClass = {
     sendMethods:objSendMethod[];
     receiveMethod?:objReceiveMethod;
 }
+
+//
+// type for messages
+export type message = {
+    name:string;
+    from:string;
+}
+
+export type receivedMessagesInState=Map<string,message[]>;

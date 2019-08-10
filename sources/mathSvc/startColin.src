@@ -11,8 +11,9 @@ async function protocol(s1:Colin_Start):Promise<Colin_End> {
       const add=new ADD(Math.floor(Math.random()*8));
       console.log(`Stuur ADD met waarden van ${add.add}`);
       const s4 = await s2a.sendADD(add);
-      s1 = await s4.recv();
-      console.log(`RES heeft waarde van ${(<SUM>s1.message).sum}`);
+      const s1_1 = await s4.recv();
+      console.log(`RES heeft waarde van ${s1_1.message.sum}`);
+      s1=s1_1;
       //
       // uitvoeren van een prod
       const val2 = new VAL(Math.floor(Math.random() * 8));
@@ -21,9 +22,9 @@ async function protocol(s1:Colin_Start):Promise<Colin_End> {
       const mul=new MUL(Math.floor(Math.random()*8));
       console.log(`Stuur MUL met waarden van ${mul.mul}`);
       const s5 = await s2b.sendMUL(mul);
-      s1 = await s5.recv();
-      console.log(`RES heeft waarde van ${(<PRD>s1.message).prd}`);
-
+      const s1_2 = await s5.recv();
+      console.log(`RES heeft waarde van ${(s1_2.message).prd}`);
+      s1=s1_2;      
    }
    let bye=new BYE();
    let done=s1.sendBYE(bye);

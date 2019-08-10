@@ -14,16 +14,16 @@ async function protocol(s1:Simon_Start):Promise<Simon_End> {
          }
          case messages.VAL: {
             const s2 = <ISimon_S2>nextState;
-            const val = (<VAL>s2.message).val;
+            const val = s2.message.val;
             //console.log(`waiting for nextstate in S2`);
             const nextActionState=await s2.recv();
             if (nextActionState.messageType === messages.ADD){
-               nextState = await (<ISimon_S4>nextActionState).sendSUM(new SUM((<ADD>nextActionState.message).add+val));
+               nextState = await nextActionState.sendSUM(new SUM(nextActionState.message.add+val));
                console.log(`SUM sended`);
                break;
             }
             if (nextActionState.messageType === messages.MUL){
-               nextState = await (<ISimon_S5>nextActionState).sendPRD(new PRD((<MUL>nextActionState.message).mul*val));
+               nextState = await nextActionState.sendPRD(new PRD(nextActionState.message.mul*val));
                console.log(`PRD sended`);
                break;
             }

@@ -1,4 +1,4 @@
-import {Transition,State,Protocol,RootObject,StateInterface,objProperty,objMethod,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
+import {message,receivedMessagesInState,Transition,State,Protocol,RootObject,StateInterface,objProperty,objMethod,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
 import * as ts from "typescript";
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -6,18 +6,29 @@ const resultFile = ts.createSourceFile("dummy.ts","",ts.ScriptTarget.Latest,fals
 const printer    = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 const printCode  = (node:ts.Node) => printer.printNode( ts.EmitHint.Unspecified, node, resultFile );
 
-const cReceive   = 'recv';
-const cSend      = 'send';
-const cInitial   = 'initial';
-const cFinal     = 'final';
-const cStateProp = 'state';
+const cReceive       = 'recv';
+const cSend          = 'send';
+const cInitial       = 'initial';
+const cFinal         = 'final';
+const cMsgFrom       = 'messageFrom';
+const cMsgType       = 'messageType';
+const cMsg           = 'message';
+const cMsgs          = 'messages';
+const cRoles         = 'roles';
 const idResolve = ts.createIdentifier('resolve');
 const idReject  = ts.createIdentifier('reject');
 const idPromise = ts.createIdentifier('Promise');
-const idState   = ts.createIdentifier(cStateProp);
 const idReceive = ts.createIdentifier(cReceive);
+const idMsgFrom = ts.createIdentifier(cMsgFrom);
+const idMsgType = ts.createIdentifier(cMsgType);
+const idMsg     = ts.createIdentifier(cMsg);
+const idRoles   = ts.createIdentifier(cRoles);
+const idMsgs    = ts.createIdentifier(cMsgs);
+//
+const idPropReadOnly = [ts.createModifier(ts.SyntaxKind.ReadonlyKeyword)];
+const idPublic       = [ts.createModifier(ts.SyntaxKind.PublicKeyword)];
 
-function getReceivedMessagesInState(state:string,stateMessageMap:Map<string,string[]>):string[]{
+function getReceivedMessagesInState(state:string,stateMessageMap:receivedMessagesInState):message[]{
     let messages = stateMessageMap.get(state);
     if (!messages) messages = [];
     return messages;
@@ -48,15 +59,16 @@ function getCheckOneTransitionPossibleForReceive(){
    return statement;
 }
 
-function createStateClassDefinition(role:string,state:State,receivedMsgPerStateMap:Map<string,string[]>,originatedStates:string[]):StateClass{
+function createStateClassDefinition(role:string,state:State,receivedMsgPerStateMap:receivedMessagesInState,originatedStates:string[]):StateClass{
    let stateClass:StateClass={name:`${role}_${state.name}`, stateType:state.type, role:role, extends:role,implements:`I${role}_${state.name}`,regularProps:[],constructorProps:[],sendMethods:[]};
    //cd stateClass.regularProps.push({name:cStateProp,optional:false,readonly:true,default:state.name});
    const transitionMessageProps=getReceivedMessagesInState(state.name,receivedMsgPerStateMap);
    for ( let i=0; i<transitionMessageProps.length;i++){
-      const propName     = `${transitionMessageProps[i].toLowerCase()}`;
-      const propDataType = `${transitionMessageProps[i].toUpperCase()}`;
+      const propName     = `${transitionMessageProps[i].name.toLowerCase()}`;
+      const propDataType = `${transitionMessageProps[i].name.toUpperCase()}`;
       const propOptional = (state.type===cInitial||originatedStates.length>1);
-      stateClass.constructorProps.push({name:propName,type:propDataType,optional:propOptional,readonly:false});
+      const messageFrom  = `${transitionMessageProps[i].from.toLowerCase()}`;
+      stateClass.constructorProps.push({name:propName,type:propDataType,optional:propOptional,from:messageFrom,readonly:false});
    }
    if (state.transitions){
       let dealWithMultipleReceivedMessages:objToReceiveMessages[]=[];
@@ -77,7 +89,7 @@ function createStateClassDefinition(role:string,state:State,receivedMsgPerStateM
                  let   positionProp=0;
                  if (totalProps>1) {
                     differentNextStateProperties.forEach( (p,i) => {
-                        if (p.toUpperCase() === transition.message.toUpperCase() ) {
+                        if (p.name.toUpperCase() === transition.message.toUpperCase() ) {
                             positionProp=i;
                         }
                     } );
@@ -93,7 +105,7 @@ function createStateClassDefinition(role:string,state:State,receivedMsgPerStateM
    return stateClass;
 }
 
-function getStateClassDefinitions(protocol:Protocol,receivedMsgPerStateMap:Map<string,string[]>,stateWithPossibleOriginStates:Map<string,string[]>):StateClass[]{
+function getStateClassDefinitions(protocol:Protocol,receivedMsgPerStateMap:receivedMessagesInState,stateWithPossibleOriginStates:Map<string,string[]>):StateClass[]{
     const stateClasses:StateClass[]=[];
     protocol.states.forEach(
         (state) => {
@@ -105,52 +117,61 @@ function getStateClassDefinitions(protocol:Protocol,receivedMsgPerStateMap:Map<s
 }
 
 function getTextFromStateClassDefinition(stateClass:StateClass):string{
+    let extraSubClasses:string|undefined=undefined;
     const extendsAndImplements = [
         ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword,          [ ts.createExpressionWithTypeArguments( undefined, ts.createIdentifier(stateClass.extends) ) ] )
     ,   ts.createHeritageClause(ts.SyntaxKind.FirstFutureReservedWord, [ ts.createExpressionWithTypeArguments( undefined, ts.createIdentifier(stateClass.implements) ) ] ) ];
 
     let classMembers:ts.ClassElement[] = [];
-    for ( const prop of stateClass.regularProps ){
-        const modifiers:ts.Modifier[]=[ts.createModifier(ts.SyntaxKind.PublicKeyword)];
-        if (prop.readonly) modifiers.push(ts.createModifier(ts.SyntaxKind.ReadonlyKeyword));
-        const defaultValue=prop.default?ts.createStringLiteral(prop.default):undefined;
-        classMembers.push( ts.createProperty( undefined, modifiers, ts.createIdentifier(prop.name), undefined, undefined, defaultValue ) );
+//    for ( const prop of stateClass.regularProps ){
+//        const modifiers:ts.Modifier[]=[ts.createModifier(ts.SyntaxKind.PublicKeyword)];
+//        if (prop.readonly) modifiers.push(ts.createModifier(ts.SyntaxKind.ReadonlyKeyword));
+//        const defaultValue=prop.default?ts.createStringLiteral(prop.default):undefined;
+//        classMembers.push( ts.createProperty( undefined, modifiers, ts.createIdentifier(prop.name), undefined, undefined, defaultValue ) );
+//    }
+
+    let classParameters:ts.ParameterDeclaration[]=[];
+    if ( stateClass.constructorProps && stateClass.constructorProps.length === 1){
+        classMembers.push(
+            ts.createProperty(undefined,idPropReadOnly,idMsgFrom,undefined,undefined,ts.createPropertyAccess(idRoles,ts.createIdentifier(stateClass.constructorProps[0].from)))
+        );
+        classMembers.push(
+            ts.createProperty(undefined,idPropReadOnly,idMsgType,undefined,undefined,ts.createPropertyAccess(idMsgs,ts.createIdentifier(stateClass.constructorProps[0].name.toUpperCase())))
+        );
+        // creating constructor parameters
+        const optionalParameter=stateClass.constructorProps[0].optional?ts.createToken(ts.SyntaxKind.QuestionToken):undefined;
+        classParameters.push(
+            ts.createParameter(undefined,idPublic,undefined,idMsg,optionalParameter,ts.createTypeReferenceNode(ts.createIdentifier(stateClass.constructorProps[0].name.toUpperCase()), undefined),undefined)
+        );
     }
 
-    // creating constructor
-    let classParameters:ts.ParameterDeclaration[]=[];
-    let propPresent=false;
-    let propOptional=false;
-    for ( const prop of stateClass.constructorProps ){
-       propPresent=true;
-       propOptional=prop.optional;
-       const optionalProp=prop.optional?ts.createToken(ts.SyntaxKind.QuestionToken):undefined;
-       classParameters.push(
-          ts.createParameter( undefined, undefined, undefined, ts.createIdentifier('messageFrom'), optionalProp, ts.createTypeReferenceNode(ts.createIdentifier('roles'), undefined), undefined )
-       );
-       classParameters.push(
-          ts.createParameter( undefined, undefined, undefined, ts.createIdentifier('messageType'), optionalProp, ts.createTypeReferenceNode(ts.createIdentifier('messages'), undefined), undefined )
-       );
-       classParameters.push(
-          ts.createParameter( undefined, undefined, undefined, ts.createIdentifier('message'), optionalProp, ts.createTypeReferenceNode(ts.createIdentifier('Message'), undefined), undefined )
-       );
-       break;
+    if ( stateClass.constructorProps && stateClass.constructorProps.length > 1){
+      let classNumber = 0;
+      for ( const prop of stateClass.constructorProps ){
+        classNumber++;
+        const subClassName=ts.createIdentifier(`${stateClass.name}_${classNumber}`);
+        const ext_and_impl=[ ts.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [ts.createExpressionWithTypeArguments(undefined,ts.createIdentifier(stateClass.name))])
+                           , ts.createHeritageClause(ts.SyntaxKind.FirstFutureReservedWord, [ts.createExpressionWithTypeArguments(undefined,ts.createIdentifier(`I${stateClass.name}_${classNumber}`))])];
+        const classProps = [
+            ts.createProperty(undefined,idPropReadOnly,idMsgFrom,undefined,undefined,ts.createPropertyAccess(idRoles,ts.createIdentifier(prop.from.toLowerCase()))),
+            ts.createProperty(undefined,idPropReadOnly,idMsgType,undefined,undefined,ts.createPropertyAccess(idMsgs,ts.createIdentifier(prop.name.toUpperCase()))),
+            ts.createConstructor(undefined,undefined,
+              [ ts.createParameter(undefined,idPublic,undefined,idMsg,undefined,ts.createTypeReferenceNode(ts.createIdentifier(prop.name.toUpperCase()), undefined),undefined)]
+              , ts.createBlock( [ ts.createExpressionStatement(ts.createCall(ts.createSuper(), undefined, [])) ], true )
+            )
+        ];
+
+        const subClass = ts.createClassDeclaration(undefined,undefined,subClassName,undefined,ext_and_impl,classProps);
+        if ( !extraSubClasses ){
+            extraSubClasses = printCode(subClass) + ts.sys.newLine;
+        } else {
+            extraSubClasses += printCode(subClass) + ts.sys.newLine;
+        }
+      }
     }
+
     let constructorBlockCode:ts.Statement[] = [];
     constructorBlockCode.push(ts.createExpressionStatement(ts.createCall(ts.createSuper(), undefined, [])));
-    if (propPresent){
-        let msgFrom:ts.Statement = ts.createExpressionStatement( ts.createBinary(ts.createPropertyAccess(ts.createSuper(),ts.createIdentifier('messageFrom')),ts.createToken(ts.SyntaxKind.FirstAssignment),ts.createIdentifier('messageFrom')) );
-        let msgType:ts.Statement = ts.createExpressionStatement( ts.createBinary(ts.createPropertyAccess(ts.createSuper(),ts.createIdentifier('messageType')),ts.createToken(ts.SyntaxKind.FirstAssignment),ts.createIdentifier('messageType')) );
-        let message:ts.Statement = ts.createExpressionStatement( ts.createBinary(ts.createPropertyAccess(ts.createSuper(),ts.createIdentifier('message')),ts.createToken(ts.SyntaxKind.FirstAssignment),ts.createIdentifier('message')) );
-        if ( propOptional ){
-            msgFrom = ts.createIf(ts.createIdentifier('messageFrom'),msgFrom,undefined);
-            msgType = ts.createIf(ts.createIdentifier('messageType'),msgType,undefined);
-            message = ts.createIf(ts.createIdentifier('message'),message,undefined);
-        }
-        constructorBlockCode.push(msgFrom);
-        constructorBlockCode.push(msgType);
-        constructorBlockCode.push(message);
-    }
     if (stateClass.stateType===cFinal){
        constructorBlockCode.push(ts.createExpressionStatement(ts.createCall(ts.createPropertyAccess(ts.createIdentifier('receiveMessageServer'),ts.createIdentifier('terminate')),undefined,[])));
     }
@@ -198,7 +219,11 @@ function getTextFromStateClassDefinition(stateClass:StateClass):string{
     if (stateClass.receiveMethod){
         let receiveMultipleTypes:ts.TypeReferenceNode[]=[];
         for ( const retType of stateClass.receiveMethod.messages ){
-            receiveMultipleTypes.push( ts.createTypeReferenceNode( ts.createIdentifier( retType.nextStateInterface), undefined) );
+            let retInterfaceType=ts.createIdentifier( retType.nextStateInterface);
+            if ( retType.totalCountOfNextClassProps > 1 ) {
+                retInterfaceType=ts.createIdentifier( `${retType.nextStateInterface}_${retType.positionNumberNextClassProps+1}`);
+            }
+            receiveMultipleTypes.push( ts.createTypeReferenceNode( retInterfaceType, undefined) );
         }
         const methodModifiers=[ts.createModifier(ts.SyntaxKind.AsyncKeyword)];
         const methodReturn = ts.createTypeReferenceNode( idPromise, [ ts.createUnionTypeNode(receiveMultipleTypes) ]);
@@ -212,18 +237,30 @@ function getTextFromStateClassDefinition(stateClass:StateClass):string{
                 ts.createPropertyAccess( ts.createIdentifier(retType.message.toUpperCase()), ts.createIdentifier('name') )
               , ts.createToken(ts.SyntaxKind.PlusToken)
               , ts.createPropertyAccess( ts.createIdentifier('roles'), ts.createIdentifier(retType.from.toLowerCase() ) ) );
-            const returnState = ts.createIdentifier(retType.nextStateClass);
+            let returnState = ts.createIdentifier(retType.nextStateClass);
+            if(retType.totalCountOfNextClassProps>1){
+                returnState = ts.createIdentifier(`${retType.nextStateClass}_${retType.positionNumberNextClassProps+1}`);
+            }
+//        name class:Colin_S4   stateType:normal  role:Colin  extends:Colin  implements:IColin_S4
+//        there is a receive methode : recv
+//        msg:Sum   from:Simon    nextStateInterface:IColin_S1   nextStateClass:Colin_S1    positionNumberNextClassProps:0    totalCountNextClassProps:2
+//        name class:Colin_S5   stateType:normal  role:Colin  extends:Colin  implements:IColin_S5
+//        there is a receive methode : recv
+//        msg:Prd   from:Simon    nextStateInterface:IColin_S1   nextStateClass:Colin_S1    positionNumberNextClassProps:1    totalCountNextClassProps:2
+
+
             const nextStateConstructorParameters:ts.Expression[]=[];
             //if ( retType.totalCountOfNextClassProps > 1 && retType.positionNumberNextClassProps > 0 ){
             //    for ( let i=1; i<retType.totalCountOfNextClassProps; i++){
             //        nextStateConstructorParameters.push(ts.createIdentifier('undefined'));
             //    }
             //}
-            //const nextStateConstructorPar = ts.createTypeAssertion( ts.createTypeReferenceNode( ts.createIdentifier(retType.message.toUpperCase()), undefined ), ts.createIdentifier('msg') );
+            const nextStateConstructorPar = ts.createTypeAssertion( ts.createTypeReferenceNode( ts.createIdentifier(retType.message.toUpperCase()), undefined ), ts.createIdentifier('msg') );
+            nextStateConstructorParameters.push(nextStateConstructorPar);
             //nextStateConstructorParameters.push(ts.createParen(nextStateConstructorPar));
-            nextStateConstructorParameters.push(ts.createPropertyAccess(ts.createIdentifier('msg'),ts.createIdentifier('from')));
-            nextStateConstructorParameters.push(ts.createPropertyAccess(ts.createIdentifier('messages'),ts.createIdentifier(retType.message.toUpperCase())));
-            nextStateConstructorParameters.push(ts.createIdentifier('msg'));
+            //nextStateConstructorParameters.push(ts.createPropertyAccess(ts.createIdentifier('msg'),ts.createIdentifier('from')));
+            //nextStateConstructorParameters.push(ts.createPropertyAccess(ts.createIdentifier('messages'),ts.createIdentifier(retType.message.toUpperCase())));
+            //nextStateConstructorParameters.push(ts.createIdentifier('msg'));
 
             const resolveState = ts.createCall( idResolve, undefined, [ ts.createNew( returnState, undefined, nextStateConstructorParameters ) ]  );
             switchCaseClauses.push(ts.createCaseClause( caseBranch, [ ts.createBlock( [ ts.createExpressionStatement( resolveState ), ts.createBreak(undefined) ], true ) ] ) );
@@ -245,7 +282,11 @@ function getTextFromStateClassDefinition(stateClass:StateClass):string{
     }
 
     const stateClassDeclaration = ts.createClassDeclaration( undefined, undefined, ts.createIdentifier(stateClass.name), undefined, extendsAndImplements, classMembers );
-    return printCode(stateClassDeclaration) + ts.sys.newLine;
+    let returnClassCode = printCode(stateClassDeclaration) + ts.sys.newLine;
+    if ( extraSubClasses ){
+        returnClassCode += extraSubClasses;
+    }
+    return returnClassCode
 }
 
 function getTextFromStateClasses(stateClasses:StateClass[]):string{

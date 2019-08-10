@@ -4,7 +4,7 @@ import {RES,ADD,BYE} from './Message';
 async function protocol(s1:Bob_Start):Promise<Bob_End> {
    let nextState:IBob = await s1.recv();
    while ( true ){
-      console.log(`message type ${nextState.messageType} received from ${nextState.messageFrom}, message body is : ${nextState.message.toString()}`);
+      console.log(`message type ${nextState.messageType} received from ${nextState.messageFrom}, message body is : ${nextState.message}`);
       switch (nextState.messageFrom + nextState.messageType) {
          case roles.alice + messages.ADD: {
             const s2 = <IBob_S2>nextState;
