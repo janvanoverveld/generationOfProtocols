@@ -2,29 +2,37 @@ import {ISimon, Simon_Start, ISimon_S2, Simon_End, ISimon_S4, ISimon_S5, execute
 import {VAL,ADD,MUL,SUM,PRD,BYE} from './Message';
 
 async function protocol(s1:Simon_Start):Promise<Simon_End> {
-   let nextState:ISimon = await s1.recv();
+   const starter = await s1.recv();
+   let messageType=starter.messageType;
+   let messageFrom=starter.messageFrom;
+   let message=starter.message;
+   let nextState:ISimon = starter;
    while ( true ){
-      console.log(`message ${nextState.messageType} received from ${nextState.messageFrom}  :  ${nextState.message}`);
-      switch (nextState.messageType) {
-         case messages.NOMESSAGE: {
-            s1 = <Simon_Start>nextState;
-            console.log(`waiting for nextstate in S1`);
-            nextState = await s1.recv();
-            break;
-         }
+      console.log(`message ${messageType} received from ${messageFrom}  :  ${message}`);
+      switch (messageType) {
          case messages.VAL: {
             const s2 = <ISimon_S2>nextState;
             const val = s2.message.val;
             //console.log(`waiting for nextstate in S2`);
             const nextActionState=await s2.recv();
             if (nextActionState.messageType === messages.ADD){
-               nextState = await nextActionState.sendSUM(new SUM(nextActionState.message.add+val));
+               const tmpState1 = await nextActionState.sendSUM(new SUM(nextActionState.message.add+val));
                console.log(`SUM sended`);
+               const tmpState2 = await tmpState1.recv();
+               messageType=tmpState2.messageType;
+               messageFrom=tmpState2.messageFrom;
+               message=tmpState2.message;
+               nextState = tmpState2;
                break;
             }
             if (nextActionState.messageType === messages.MUL){
-               nextState = await nextActionState.sendPRD(new PRD(nextActionState.message.mul*val));
+               const tmpState1 = await nextActionState.sendPRD(new PRD(nextActionState.message.mul*val));
                console.log(`PRD sended`);
+               const tmpState2 = await tmpState1.recv();
+               messageType=tmpState2.messageType;
+               messageFrom=tmpState2.messageFrom;
+               message=tmpState2.message;
+               nextState = tmpState2;
                break;
             }
          }
@@ -34,6 +42,10 @@ async function protocol(s1:Simon_Start):Promise<Simon_End> {
             return new Promise(
                resolve => resolve(sdone)
             );
+         }
+         default: {
+            console.log(`how is this possible`);
+            break;
          }
       }
    }

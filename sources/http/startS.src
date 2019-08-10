@@ -1,15 +1,15 @@
-import {IS, IS_S1, IS_S2, IS_S3, IS_S4, IS_S5, executeProtocol, IS_S6, messages} from './S';
+import {S_Start, S_End,executeProtocol, messages} from './S';
 import {REQUESTL,HOST,USERA,ACCEPT,ACCEPTL,ACCEPTE,DNT,CONNECTION,UPGRADEIR,BODY,HTTPV,HTTP200,HTTP404,DATE,SERVER,STRICTTS,LASTM,ETAG,ACCEPTR,CONTENTL,VARY,CONTENTT,VIA} from './Message';
 
-async function protocol(s1:IS_S1):Promise<IS_S6> {
+async function protocol(s1:S_Start):Promise<S_End> {
    let s2 = await s1.recv();
    let s2s3 = await s2.recv();
-   while ( s2s3.messageType !== messages.NOMESSAGE && s2s3.messageType !== messages.BODY ){
+   while (  s2s3.messageType !== messages.BODY ){
       console.log(`received message ${s2s3.messageType}  from ${s2s3.messageFrom}`);
-      s2s3 = await (<IS_S2>s2s3).recv();
+      s2s3 = await s2s3.recv();
    }
-   let s3 = <IS_S3>s2s3;
-   console.log(`received body ${(<BODY>s3.message).value}`);
+   let s3 = s2s3;
+   console.log(`received body ${s3.message.value}`);
    let s4 = await s3.sendHTTPV(new HTTPV('http version XXX'));
    let s5 = await s4.sendHTTP200(new HTTP200('OK-200'));
 

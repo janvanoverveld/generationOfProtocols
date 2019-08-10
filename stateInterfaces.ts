@@ -111,6 +111,7 @@ function getInterfacesAsText(interfaces:StateInterface[]):string{
         let tsTypeElements:ts.TypeElement[]=[];
         // adding message properties to the abstract interface
         if (inf.stateType === cAbstractState ) {
+            /*
             tsTypeElements.push(
                ts.createPropertySignature( undefined, idMsgFrom, undefined, ts.createTypeReferenceNode(idRoles, undefined), undefined )
             );
@@ -120,6 +121,7 @@ function getInterfacesAsText(interfaces:StateInterface[]):string{
             tsTypeElements.push(
                ts.createPropertySignature( undefined, idMsg, ts.createToken(ts.SyntaxKind.QuestionToken), ts.createTypeReferenceNode(ts.createIdentifier('Message'), undefined), undefined )
             );
+            */
         }
         if ( inf.props && inf.props.length === 1 ) {
             const msgFrom = ts.createTypeReferenceNode(ts.createQualifiedName(idRoles,ts.createIdentifier(inf.props[0].from.toLowerCase())),undefined);

@@ -36,7 +36,7 @@ function getImportDefinitions(messages:string[]):string {
 function getEnumWithMessages(protocolMessages):string {
    const enumMessages:ts.EnumMember[]=[];
    protocolMessages.forEach( (msg) => enumMessages.push(ts.createEnumMember(ts.createIdentifier(msg),ts.createStringLiteral(msg))));
-   enumMessages.push(ts.createEnumMember(ts.createIdentifier(cNoMessage),ts.createStringLiteral(cNoMessage) ) );
+   //enumMessages.push(ts.createEnumMember(ts.createIdentifier(cNoMessage),ts.createStringLiteral(cNoMessage) ) );
    const messagesEnums = ts.createEnumDeclaration(undefined,undefined,ts.createIdentifier(cMessageEnum),enumMessages);
    return printCode(messagesEnums) + ts.sys.newLine;
 }
@@ -63,11 +63,12 @@ function getStateAbstractClass(role:string):string{
         ]
       , true ) );
 
-  const msgFrom:ts.ClassElement = ts.createProperty(undefined,[ts.createModifier(ts.SyntaxKind.PublicKeyword)],ts.createIdentifier('messageFrom'),undefined,undefined, ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(role.toLowerCase())) );
-  const msgType:ts.ClassElement = ts.createProperty(undefined,[ts.createModifier(ts.SyntaxKind.PublicKeyword)],ts.createIdentifier('messageType'),undefined,undefined, ts.createPropertyAccess(ts.createIdentifier('messages'),ts.createIdentifier(cNoMessage)));
-  const msg:ts.ClassElement     = ts.createProperty(undefined,[ts.createModifier(ts.SyntaxKind.PublicKeyword)],ts.createIdentifier('message'),ts.createToken(ts.SyntaxKind.QuestionToken),ts.createTypeReferenceNode(ts.createIdentifier('Message'), undefined),ts.createNew(ts.createIdentifier(cNoMessage), undefined, []));
+  //const msgFrom:ts.ClassElement = ts.createProperty(undefined,[ts.createModifier(ts.SyntaxKind.PublicKeyword)],ts.createIdentifier('messageFrom'),undefined,undefined, ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(role.toLowerCase())) );
+  //const msgType:ts.ClassElement = ts.createProperty(undefined,[ts.createModifier(ts.SyntaxKind.PublicKeyword)],ts.createIdentifier('messageType'),undefined,undefined, ts.createPropertyAccess(ts.createIdentifier('messages'),ts.createIdentifier(cNoMessage)));
+  //const msg:ts.ClassElement     = ts.createProperty(undefined,[ts.createModifier(ts.SyntaxKind.PublicKeyword)],ts.createIdentifier('message'),ts.createToken(ts.SyntaxKind.QuestionToken),ts.createTypeReferenceNode(ts.createIdentifier('Message'), undefined),ts.createNew(ts.createIdentifier(cNoMessage), undefined, []));
 
-  classMembers = [ msgFrom, msgType, msg, constructor, ts.createSemicolonClassElement(), chkOneTransition ];
+  //classMembers = [ msgFrom, msgType, msg, constructor, ts.createSemicolonClassElement(), chkOneTransition ];
+  classMembers = [ constructor, ts.createSemicolonClassElement(), chkOneTransition ];
   const implementsInterface = [ ts.createHeritageClause(ts.SyntaxKind.FirstFutureReservedWord, [ ts.createExpressionWithTypeArguments( undefined, ts.createIdentifier(`I${capitalize(role)}`) ) ]) ];
   const abstractClass = ts.createClassDeclaration( undefined, [ts.createModifier(ts.SyntaxKind.AbstractKeyword)], ts.createIdentifier(role), undefined, implementsInterface, classMembers );
 
@@ -234,12 +235,12 @@ function getStateObjects( protocol:Protocol ):string{
     // get interfaces
     const stateInterfaces:StateInterface[]=getStateInterfaces(protocol.role, protocol.states, receivedMessagesInState,stateWithPossibleOriginStates);
     // debug, show interfaces
-    showInterfaces(stateInterfaces);
+    //showInterfaces(stateInterfaces);
 
     // get classes
     const stateClasses = getStateClassDefinitions(protocol,receivedMessagesInState,stateWithPossibleOriginStates);
     // debug show classes
-    showClasses(stateClasses);
+    //showClasses(stateClasses);
 
     // revert interfaces to text
     returnTxt += getInterfacesAsText(stateInterfaces);

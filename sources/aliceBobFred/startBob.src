@@ -1,18 +1,26 @@
-import {IBob, Bob_Start, Bob_End,IBob_S2,IBob_S3,IBob_S4,IBob_S5,IBob_S6,IBob_S8,executeProtocol,messages,roles} from './Bob';
+import {IBob, Bob_Start, Bob_End,IBob_S2,IBob_S3,IBob_S4,IBob_S5,IBob_S6, IBob_S8,executeProtocol,messages,roles} from './Bob';
 import {RES,ADD,BYE} from './Message';
 
 async function protocol(s1:Bob_Start):Promise<Bob_End> {
-   let nextState:IBob = await s1.recv();
+   const starter = await s1.recv();
+   let messageType=starter.messageType;
+   let messageFrom=starter.messageFrom;
+   let message=starter.message;
+   let nextState:IBob = starter;
    while ( true ){
-      console.log(`message type ${nextState.messageType} received from ${nextState.messageFrom}, message body is : ${nextState.message}`);
-      switch (nextState.messageFrom + nextState.messageType) {
+      console.log(`message type ${messageType} received from ${messageFrom}, message body is : ${message}`);
+      switch (messageFrom + messageType) {
          case roles.alice + messages.ADD: {
             const s2 = <IBob_S2>nextState;
-            const add = <ADD> s2.message;
+            const add = s2.message;
             const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar Alice `);
-            s1 = await s2.sendRES(res);
-            nextState = await s1.recv();
+            const tmpState1 = await s2.sendRES(res);
+            const tmpState2 = await tmpState1.recv();
+            messageType = tmpState2.messageType;
+            messageFrom = tmpState2.messageFrom;
+            message     = tmpState2.message;
+            nextState   = tmpState2;
             break;
          }
          case roles.fred + messages.ADD: {
@@ -20,31 +28,45 @@ async function protocol(s1:Bob_Start):Promise<Bob_End> {
             const add = <ADD> s3.message;
             const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar fred `);
-            s1 = await s3.sendRES(res);
-            nextState = await s1.recv();
+            const tmpState1 = await s3.sendRES(res);
+            const tmpState2 = await tmpState1.recv();
+            messageType = tmpState2.messageType;
+            messageFrom = tmpState2.messageFrom;
+            message     = tmpState2.message;
+            nextState   = tmpState2;
             break;
          }
          case roles.fred + messages.BYE: {
             const s4 = <IBob_S4>nextState;
-            const bye = <BYE> s4.message;
-            console.log(`${nextState.messageType} ontvangen van ${nextState.messageFrom}`);
-            nextState = await s4.recv();
+            console.log(`${s4.messageType} ontvangen van ${s4.messageFrom}`);
+            const tmpState1 = await s4.recv();
+            messageType = tmpState1.messageType;
+            messageFrom = tmpState1.messageFrom;
+            message     = tmpState1.message;
+            nextState   = tmpState1;
             break;
          }
          case roles.alice + messages.BYE: {
             let s5 = <IBob_S5>nextState;
-            const bye = <BYE> s5.message;
-            console.log(`${nextState.messageType} ontvangen van ${nextState.messageFrom}`);
-            nextState = await s5.recv();
+            console.log(`${s5.messageType} ontvangen van ${s5.messageFrom}`);
+            const tmpState1 = await s5.recv();
+            messageType = tmpState1.messageType;
+            messageFrom = tmpState1.messageFrom;
+            message     = tmpState1.message;
+            nextState   = tmpState1;
             break;
          }
          case roles.alice + messages.ADD: {
             const s6 = <IBob_S6>nextState;
-            const add = <ADD> s6.message;
+            const add = s6.message;
             const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar Alice `);
-            const s4 = await s6.sendRES(res);
-            nextState = await s4.recv();
+            const tmpState1 = await s6.sendRES(res);
+            const tmpState2 = await tmpState1.recv();
+            messageType = tmpState2.messageType;
+            messageFrom = tmpState2.messageFrom;
+            message     = tmpState2.message;
+            nextState   = tmpState2;
             break;
          }
          case roles.fred + messages.ADD: {
@@ -52,8 +74,12 @@ async function protocol(s1:Bob_Start):Promise<Bob_End> {
             const add = <ADD> s8.message;
             const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar Fred `);
-            const s5 = await s8.sendRES(res);
-            nextState = await s5.recv();
+            const tmpState1 = await s8.sendRES(res);
+            const tmpState2 = await tmpState1.recv();
+            messageType = tmpState2.messageType;
+            messageFrom = tmpState2.messageFrom;
+            message     = tmpState2.message;
+            nextState   = tmpState2;
             break;
          }
          case roles.alice + messages.BYE: {
@@ -71,6 +97,7 @@ async function protocol(s1:Bob_Start):Promise<Bob_End> {
             );
          }
          default: {
+            console.log(`how is this possible!!`);
          }
       }
    }
