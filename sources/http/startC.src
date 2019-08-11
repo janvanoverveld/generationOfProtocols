@@ -2,28 +2,23 @@ import {C_Start,IC_S5, executeProtocol, C_End, messages} from './C';
 import {REQUESTL,HOST,USERA,ACCEPT,ACCEPTL,ACCEPTE,DNT,CONNECTION,UPGRADEIR,BODY,HTTPV,HTTP200,HTTP404,DATE,SERVER,STRICTTS,LASTM,ETAG,ACCEPTR,CONTENTL,VARY,CONTENTT,VIA} from './Message';
 
 async function protocol(s1:C_Start):Promise<C_End> {
-   let s2 = await s1.sendREQUESTL(new REQUESTL('request tl'));
-   s2 = await s2.sendHOST(new DNT('localhost'));
-   s2 = await s2.sendUSERA(new UPGRADEIR('mr. client'));
-   s2 = await s2.sendACCEPT(new ACCEPT('accepter'));
-   s2 = await s2.sendACCEPTL(new ACCEPTL('accepter L'));
-   s2 = await s2.sendACCEPTE(new ACCEPTE('accepter E'));
-   s2 = await s2.sendDNT(new DNT('dnter'));
-   s2 = await s2.sendCONNECTION(new CONNECTION('connection'));
-   s2 = await s2.sendDNT(new DNT('dnter'));
-   const s3 = await s2.sendBODY(new BODY('the body of the message'));
-   const s4 = await s3.recv();
-   console.log(`The received http version from the client is : ${s4.message.value}`);
-   const s5 = await s4.recv();
-   console.log(`The http response gave following code : ${s5.message.value}`);
-   let s5s6 = await s5.recv();
-   while (s5s6.messageType !== messages.BODY){
-      console.log(`a ${s5s6.messageType} received from ${s5s6.messageFrom}`);
-      s5s6 = await s5s6.recv();
+   const t1 = await s1.sendREQUESTL(new REQUESTL('request tl'));
+   const t2 = await t1.sendHOST(new DNT('localhost'));
+   const t3 = await t2.sendUSERA(new UPGRADEIR('mr. client'));
+   const t4 = await t3.sendACCEPT(new ACCEPT('accepter'));
+   const t5 = await t4.sendBODY(new BODY('the body of the message'));
+   const t6 = await t5.recv();
+   console.log(`The received http version from the client is : ${t6.message.value}`);
+   const t7 = await t6.recv();
+   console.log(`The http response gave following code : ${t7.message.value}`);
+   let t8 = await t7.recv();
+   while (t8.messageType !== messages.BODY){
+      console.log(`a ${t8.messageType} received from ${t8.messageFrom}`);
+      t8 = await t8.recv();
    }
-   const s6 = s5s6;
-   console.log(`eindstate heeft body : ${s6.message.value}`);
-   return new Promise( resolve => resolve( s6 ) );
+   const t9 = t8;
+   console.log(`eindstate heeft body : ${t9.message.value}`);
+   return new Promise( resolve => resolve( t9 ) );
 }
 
 async function start(){
