@@ -69,7 +69,7 @@ function getStateAbstractClass(role:string):string{
 
   //classMembers = [ msgFrom, msgType, msg, constructor, ts.createSemicolonClassElement(), chkOneTransition ];
   classMembers = [ constructor, ts.createSemicolonClassElement(), chkOneTransition ];
-  const implementsInterface = [ ts.createHeritageClause(ts.SyntaxKind.FirstFutureReservedWord, [ ts.createExpressionWithTypeArguments( undefined, ts.createIdentifier(`I${capitalize(role)}`) ) ]) ];
+  const implementsInterface = [ ts.createHeritageClause(ts.SyntaxKind.FirstFutureReservedWord, [ ts.createExpressionWithTypeArguments( undefined, ts.createIdentifier(`I${role}`) ) ]) ];
   const abstractClass = ts.createClassDeclaration( undefined, [ts.createModifier(ts.SyntaxKind.AbstractKeyword)], ts.createIdentifier(role), undefined, implementsInterface, classMembers );
 
   return printCode(abstractClass) + ts.sys.newLine;

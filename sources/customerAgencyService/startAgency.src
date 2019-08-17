@@ -1,0 +1,32 @@
+import {Iagency, agency_Start, agency_End, executeProtocol, Iagency_S2, Iagency_S3, Iagency_S4, messages} from './agency';
+import {QUERY,PRICE,INFO,ACCEPT,REJECT,ADDRESS,DATE} from './Message';
+
+async function protocol(s1:agency_Start):Promise<agency_End> {
+   console.log('start agency');
+   while (true){
+      let customerReq = await s1.recv();
+      console.log(`agency received message ${customerReq.messageType} from ${customerReq.messageFrom}`);
+      switch (customerReq.messageType) {
+         case messages.QUERY:{
+            const price = new PRICE(Math.floor(Math.random() * 1000));
+            const ts1 = await customerReq.sendPRICE(price);
+            s1 = await ts1.sendINFO(new INFO(`This is a trip to ${customerReq.message.journey} for ${price.price} euro.`));
+            break;
+         }
+         case messages.ACCEPT: {
+            const done = await customerReq.sendACCEPT(new ACCEPT());
+            return new Promise( resolve => resolve(done) );
+         }
+         case messages.REJECT: {
+            const done = await customerReq.sendREJECT(new REJECT());
+            return new Promise( resolve => resolve(done) );
+         }
+      }
+   }
+}
+
+async function start(){
+   await executeProtocol(protocol,'localhost',30002);
+}
+
+start();

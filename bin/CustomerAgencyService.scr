@@ -1,0 +1,18 @@
+module TravelAgency;
+
+global protocol TravelAgency(role customer, role agency, role service) {
+    choice { QUERY from customer to agency;
+             PRICE from agency to customer;
+             INFO from agency to service;
+             do TravelAgency(customer,agency,service);
+           } or {
+              choice { ACCEPT from customer to agency;
+                       ACCEPT from agency to service;
+                       ADDRESS from customer to service;
+                       DATE from service to customer;
+             } or {
+                REJECT from customer to agency;
+                REJECT from agency to service;
+             }
+           }
+}

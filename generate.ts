@@ -13,6 +13,8 @@ const jsonMatSvc                 = "MathSvc.json";
 const sourceLocationMathSvc      = 'sources/mathSvc/';
 const jsonHttp                   = "Http.json";
 const sourceLocationHttp         = 'sources/http/'
+const jsonCustomerAgency         = "CustomerAgencyService.json";
+const srcLocCustomerAgency       = 'sources/customerAgencyService/';
 
 const fileNameGlobalObjects      = 'globalObjects.src';
 const fileNameMessages           = 'Message.src';
@@ -85,7 +87,8 @@ async function startGeneratieRepository(sourceProtocolJson:string, repoSourceLoc
     const protoSpec:RootObject = JSON.parse(protocolData);
 
     const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-    const rolePartOfName = protoSpec.roles.sort().reduce((ret,role)=>ret+=capitalize(role));
+    let rolePartOfName = protoSpec.roles.sort().reduce( (ret,role) => ret+=capitalize(role) );
+    rolePartOfName = capitalize(rolePartOfName);
     const targetRepoName = `../generated${rolePartOfName}/`;
 
     if (fs.existsSync(targetRepoName)) {
@@ -142,6 +145,9 @@ async function starter(pars:string[]){
             case 'D':
                 await startGeneratieRepository(jsonHttp, sourceLocationHttp, opstartenRepo );
                 break;
+            case 'E':
+                await startGeneratieRepository(jsonCustomerAgency, srcLocCustomerAgency, opstartenRepo );
+                break;
             case '0':
                 console.log(`startup generation of Alice and Bob example`);
                 await startGeneratieRepository(jsonAliceBob, sourceLocationAliceBob, opstartenRepo );
@@ -153,6 +159,8 @@ async function starter(pars:string[]){
                 await startGeneratieRepository(jsonMatSvc, sourceLocationMathSvc, opstartenRepo );
                 console.log(`startup generation of Http Example from the scribble paper`);
                 await startGeneratieRepository(jsonHttp, sourceLocationHttp, opstartenRepo );
+                console.log(`multi party, customer agency`);
+                await startGeneratieRepository(jsonCustomerAgency, srcLocCustomerAgency, opstartenRepo );
                 break;
             default:
                 console.log(`not a valid repository option --> ${pars[2]}`);

@@ -1,0 +1,36 @@
+import {Icustomer, customer_Start, customer_End, executeProtocol} from './customer';
+import {QUERY,PRICE,INFO,ACCEPT,REJECT,ADDRESS,DATE} from './Message';
+
+async function sleep(ms:number) {
+   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function protocol(s1:customer_Start):Promise<customer_End> {
+   console.log('start agency');
+
+   const reizen = ['Londen','New York','Ibiza'];
+   for ( const reis of reizen ){
+      const querySend = await s1.sendQUERY(new QUERY(reis));
+      const nextState = await querySend.recv();
+      console.log(`customer received message ${nextState.messageType} from ${nextState.messageFrom}`);
+      if ( nextState.message ) console.log(`vacation to ${reis} costs ${nextState.message.price} euro`);  
+      s1 = nextState;
+   }
+
+   const acceptAccept = await s1.sendACCEPT(new ACCEPT());
+   //
+   // er is een timing probleem, role service verwacht eerst een ACCEPT van agency, en daarna de ADRESS van deze, customer.
+   // Voor nu een sleep, om customer tijd te geven om de ACCEPT te sturen, maar dit is fout.
+   await sleep(100);
+   const addressSend = await acceptAccept.sendADDRESS(new ADDRESS('my adress in the Netherlands'));
+   const when = await addressSend.recv();
+   console.log(`customer received message ${when.messageType} from ${when.messageFrom}`);   
+   if (when.message) console.log(`on vacation on ${when.message.date}`);
+   return new Promise( resolve => resolve( when ) );
+}
+
+async function start(){
+   await executeProtocol(protocol,'localhost',30003);
+}
+
+start();

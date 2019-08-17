@@ -1,0 +1,46 @@
+import {Iservice, service_Start, service_End, executeProtocol, messages} from './service';
+import {QUERY,PRICE,INFO,ACCEPT,REJECT,ADDRESS,DATE} from './Message';
+
+async function protocol(s1:service_Start):Promise<service_End> {
+   console.log('start service');
+   while (true){
+      let agencyReq = await s1.recv();
+      console.log(`service received message ${agencyReq.messageType} from ${agencyReq.messageFrom}`);
+      switch (agencyReq.messageType) {
+         case messages.INFO : {
+            if (agencyReq.message) console.log(`information : ${agencyReq.message.info}`);
+            s1 = agencyReq;
+            break;
+         }
+         case messages.ACCEPT: {
+            const acceptReceived = await agencyReq.recv();
+            console.log(`after Accept received following message ${acceptReceived.messageType} from ${acceptReceived.messageFrom}`);
+            switch (acceptReceived.messageType) {
+               case messages.ADDRESS : {
+                  console.log(`address = ${acceptReceived.message.address}`);
+                  const travelDate = new Date( (new Date()).getTime() + Math.random() );
+                  const done = acceptReceived.sendDATE( new DATE(travelDate) );
+                  return new Promise( resolve => resolve(done) );
+               }
+               default : {
+                  console.log(`not possible...`);
+               }
+            }
+            break;
+         }
+         case messages.REJECT: {
+            const done = agencyReq;
+            return new Promise( resolve => resolve(done) );
+         }
+         default : {
+            console.log(`should not be possible...`);
+         }
+      }
+   }
+}
+
+async function start(){
+   await executeProtocol(protocol,'localhost',30001);
+}
+
+start();

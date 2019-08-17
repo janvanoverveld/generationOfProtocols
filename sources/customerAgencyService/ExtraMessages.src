@@ -1,0 +1,41 @@
+// extra custom classes
+
+export class QUERY extends Message {
+    constructor(public journey: string) {
+        super(QUERY.name);
+    }
+}
+
+export class PRICE extends Message {
+    constructor(public price: number) {
+        super(PRICE.name);
+    }
+}
+
+export class INFO extends Message {
+    constructor(public info: string) {
+        super(INFO.name);
+    }
+}
+
+export class ACCEPT extends Message {
+    constructor() {
+        super(ACCEPT.name);
+    }
+}
+
+export class REJECT extends Message {
+    constructor() {
+        super(REJECT.name);
+    }
+}
+export class ADDRESS extends Message {
+    constructor(public address: string) {
+        super(ADDRESS.name);
+    }
+}
+export class DATE extends Message {
+    constructor(public date: Date ) {
+        super(DATE.name);
+    }
+}
