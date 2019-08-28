@@ -228,9 +228,47 @@ function getTextFromStateClassDefinition(stateClass:StateClass):string{
         const methodModifiers=[ts.createModifier(ts.SyntaxKind.AsyncKeyword)];
         const methodReturn = ts.createTypeReferenceNode( idPromise, [ ts.createUnionTypeNode(receiveMultipleTypes) ]);
         const methodStatements=[getCheckOneTransitionPossibleForReceive()];
-        const msgWaitForMessageVarDeclaration = ts.createVariableDeclaration( ts.createIdentifier('msg'), undefined, ts.createAwait( ts.createCall( ts.createIdentifier('waitForMessage'), undefined, [] ) ) );
-        const msgWaitForMessage = ts.createVariableStatement( undefined, ts.createVariableDeclarationList( [ msgWaitForMessageVarDeclaration ], ts.NodeFlags.AwaitContext | ts.NodeFlags.Let  ) );
-        methodStatements.push(msgWaitForMessage);
+        //
+        //
+        const messagePredicateType = ts.createFunctionTypeNode( undefined, [ ts.createParameter(undefined,undefined,undefined,ts.createIdentifier('message'),undefined,ts.createTypeReferenceNode(ts.createIdentifier('Message'),undefined),undefined) ],ts.createKeywordTypeNode(ts.SyntaxKind.BooleanKeyword));
+        const messagePredicateExpressens:ts.Expression[]=[];
+        for ( const retType of stateClass.receiveMethod.messages ){
+           const predicatePiece = ts.createParen(
+                ts.createBinary(
+                  ts.createBinary(ts.createPropertyAccess(ts.createIdentifier('m'),ts.createIdentifier('name')),
+                    ts.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                    ts.createPropertyAccess(ts.createIdentifier(retType.message.toUpperCase()),ts.createIdentifier('name')
+                    )
+                  ),
+                  ts.createToken(ts.SyntaxKind.AmpersandAmpersandToken),
+                  ts.createBinary(
+                    ts.createPropertyAccess(ts.createIdentifier('m'),ts.createIdentifier('from')),
+                    ts.createToken(ts.SyntaxKind.EqualsEqualsEqualsToken),
+                    ts.createPropertyAccess(ts.createIdentifier('roles'),ts.createIdentifier(retType.from.toLowerCase()))
+                  )
+                )
+           );
+           messagePredicateExpressens.push(predicatePiece);
+        }
+
+        let msgPredicateExpression:ts.Expression = messagePredicateExpressens[0];
+        for ( let i=1; i<messagePredicateExpressens.length; i++){
+            msgPredicateExpression = ts.createBinary(msgPredicateExpression,ts.createToken(ts.SyntaxKind.BarBarToken),messagePredicateExpressens[i]);
+        }
+        const messagePredicateBody:ts.ConciseBody = msgPredicateExpression;
+        const messagePredicate = ts.createArrowFunction(undefined,undefined,[ ts.createParameter(undefined,undefined,undefined,ts.createIdentifier('m'),undefined,undefined,undefined)],undefined,ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),messagePredicateBody);
+        const messagePredicateVar = ts.createVariableStatement( undefined, ts.createVariableDeclarationList( [ ts.createVariableDeclaration(ts.createIdentifier('msgPredicate'),messagePredicateType,messagePredicate) ], ts.NodeFlags.Const ) );
+        methodStatements.push(messagePredicateVar);
+        //
+        // await op msg
+        const awaitOpMsg=ts.createVariableStatement(undefined,
+            ts.createVariableDeclarationList(
+              [ ts.createVariableDeclaration(ts.createIdentifier('msg'),undefined
+                ,ts.createAwait(ts.createCall(ts.createPropertyAccess(ts.createIdentifier('messageDB'),ts.createIdentifier('remove')),undefined,[ts.createIdentifier('msgPredicate')])) ) ],
+              ts.NodeFlags.Const
+        ));
+        methodStatements.push(awaitOpMsg);
+        //
         const switchCaseClauses:ts.CaseOrDefaultClause[]=[];
         for ( const retType of stateClass.receiveMethod.messages ){
             const caseBranch = ts.createBinary(
@@ -241,27 +279,9 @@ function getTextFromStateClassDefinition(stateClass:StateClass):string{
             if(retType.totalCountOfNextClassProps>1){
                 returnState = ts.createIdentifier(`${retType.nextStateClass}_${retType.positionNumberNextClassProps+1}`);
             }
-//        name class:Colin_S4   stateType:normal  role:Colin  extends:Colin  implements:IColin_S4
-//        there is a receive methode : recv
-//        msg:Sum   from:Simon    nextStateInterface:IColin_S1   nextStateClass:Colin_S1    positionNumberNextClassProps:0    totalCountNextClassProps:2
-//        name class:Colin_S5   stateType:normal  role:Colin  extends:Colin  implements:IColin_S5
-//        there is a receive methode : recv
-//        msg:Prd   from:Simon    nextStateInterface:IColin_S1   nextStateClass:Colin_S1    positionNumberNextClassProps:1    totalCountNextClassProps:2
-
-
             const nextStateConstructorParameters:ts.Expression[]=[];
-            //if ( retType.totalCountOfNextClassProps > 1 && retType.positionNumberNextClassProps > 0 ){
-            //    for ( let i=1; i<retType.totalCountOfNextClassProps; i++){
-            //        nextStateConstructorParameters.push(ts.createIdentifier('undefined'));
-            //    }
-            //}
             const nextStateConstructorPar = ts.createTypeAssertion( ts.createTypeReferenceNode( ts.createIdentifier(retType.message.toUpperCase()), undefined ), ts.createIdentifier('msg') );
             nextStateConstructorParameters.push(nextStateConstructorPar);
-            //nextStateConstructorParameters.push(ts.createParen(nextStateConstructorPar));
-            //nextStateConstructorParameters.push(ts.createPropertyAccess(ts.createIdentifier('msg'),ts.createIdentifier('from')));
-            //nextStateConstructorParameters.push(ts.createPropertyAccess(ts.createIdentifier('messages'),ts.createIdentifier(retType.message.toUpperCase())));
-            //nextStateConstructorParameters.push(ts.createIdentifier('msg'));
-
             const resolveState = ts.createCall( idResolve, undefined, [ ts.createNew( returnState, undefined, nextStateConstructorParameters ) ]  );
             switchCaseClauses.push(ts.createCaseClause( caseBranch, [ ts.createBlock( [ ts.createExpressionStatement( resolveState ), ts.createBreak(undefined) ], true ) ] ) );
         }

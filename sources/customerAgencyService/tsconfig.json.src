@@ -21,6 +21,7 @@
     "agency.ts",
     "startService.ts",
     "startCustomer.ts",
+    "messageDB.ts",    
     "startAgency.ts"
     ]
 }

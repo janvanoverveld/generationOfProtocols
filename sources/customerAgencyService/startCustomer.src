@@ -18,10 +18,6 @@ async function protocol(s1:customer_Start):Promise<customer_End> {
    }
 
    const acceptAccept = await s1.sendACCEPT(new ACCEPT());
-   //
-   // er is een timing probleem, role service verwacht eerst een ACCEPT van agency, en daarna de ADRESS van deze, customer.
-   // Voor nu een sleep, om customer tijd te geven om de ACCEPT te sturen, maar dit is fout.
-   await sleep(100);
    const addressSend = await acceptAccept.sendADDRESS(new ADDRESS('my adress in the Netherlands'));
    const when = await addressSend.recv();
    console.log(`customer received message ${when.messageType} from ${when.messageFrom}`);   
