@@ -1,4 +1,4 @@
-import {message,receivedMessagesInState,Transition,State,Protocol,RootObject,StateInterface,objProperty,objMethod,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
+import {message,receivedMessagesInState,Transition,State,Protocol,RootObject,StateInterface,objProperty,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
 import * as ts from "typescript";
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -75,7 +75,7 @@ function createStateClassDefinition(role:string,state:State,receivedMsgPerStateM
       state.transitions.forEach(
           (transition) => {
               if ( transition.op === cSend ) {
-                 const methName        = `${cSend}${transition.message.toUpperCase()}`;
+                 const methName        = `${cSend}_${transition.message.toUpperCase()}_to_${transition.role}`;
                  const methReturnType  = `I${role}_${transition.next}`;
                  const methReturnClass = `${role}_${transition.next}`;
                  const sendMethod:objSendMethod = {name:methName, msg:transition.message, nextStateInterface: methReturnType, nextStateClass:methReturnClass, from: role, to:transition.role};

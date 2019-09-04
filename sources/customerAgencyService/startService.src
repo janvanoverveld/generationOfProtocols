@@ -19,7 +19,7 @@ async function protocol(s1:service_Start):Promise<service_End> {
                case messages.ADDRESS : {
                   console.log(`address = ${acceptReceived.message.address}`);
                   const travelDate = new Date( (new Date()).getTime() + Math.random() );
-                  const done = acceptReceived.sendDATE( new DATE(travelDate) );
+                  const done = acceptReceived.send_DATE_to_customer( new DATE(travelDate) );
                   return new Promise( resolve => resolve(done) );
                }
                default : {

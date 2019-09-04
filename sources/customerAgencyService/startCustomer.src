@@ -8,17 +8,17 @@ async function sleep(ms:number) {
 async function protocol(s1:customer_Start):Promise<customer_End> {
    console.log('start agency');
 
-   const reizen = ['Londen','New York','Ibiza'];
+   const reizen = ['Londen','New York','Brugge'];
    for ( const reis of reizen ){
-      const querySend = await s1.sendQUERY(new QUERY(reis));
+      const querySend = await s1.send_QUERY_to_agency(new QUERY(reis));
       const nextState = await querySend.recv();
       console.log(`customer received message ${nextState.messageType} from ${nextState.messageFrom}`);
       if ( nextState.message ) console.log(`vacation to ${reis} costs ${nextState.message.price} euro`);  
       s1 = nextState;
    }
 
-   const acceptAccept = await s1.sendACCEPT(new ACCEPT());
-   const addressSend = await acceptAccept.sendADDRESS(new ADDRESS('my adress in the Netherlands'));
+   const acceptAccept = await s1.send_ACCEPT_to_agency(new ACCEPT());
+   const addressSend = await acceptAccept.send_ADDRESS_to_service(new ADDRESS('my adress in the Netherlands'));
    const when = await addressSend.recv();
    console.log(`customer received message ${when.messageType} from ${when.messageFrom}`);   
    if (when.message) console.log(`on vacation on ${when.message.date}`);

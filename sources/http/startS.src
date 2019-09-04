@@ -10,13 +10,13 @@ async function protocol(s1:S_Start):Promise<S_End> {
    }
    const t3 = t2;
    console.log(`received message ${t3.messageType} from ${t3.messageFrom} with body ${t3.message.value}`);
-   const t4 = await t3.sendHTTPV(new HTTPV('http version XXX'));
-   let t5 = await t4.sendHTTP200(new HTTP200('OK-200'));
+   const t4 = await t3.send_HTTPV_to_C(new HTTPV('http version XXX'));
+   let t5 = await t4.send_HTTP200_to_C(new HTTP200('OK-200'));
 
-   t5 = await t5.sendDATE(new DATE((new Date()).toDateString()));
-   t5 = await t5.sendSERVER(new SERVER('localhost'));
-   t5 = await t5.sendVIA(new VIA('via piece of msg'));
-   const t6 = await t5.sendBODY(new BODY(`The server added this body, this is the body of the message, received from me, process S`));
+   t5 = await t5.send_DATE_to_C(new DATE((new Date()).toDateString()));
+   t5 = await t5.send_SERVER_to_C(new SERVER('localhost'));
+   t5 = await t5.send_VIA_to_C(new VIA('via piece of msg'));
+   const t6 = await t5.send_BODY_to_C(new BODY(`The server added this body, this is the body of the message, received from me, process S`));
    return new Promise( (resolve) => {
       resolve(t6);
    });

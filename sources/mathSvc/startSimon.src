@@ -16,7 +16,7 @@ async function protocol(s1:Simon_Start):Promise<Simon_End> {
             //console.log(`waiting for nextstate in S2`);
             const nextActionState=await s2.recv();
             if (nextActionState.messageType === messages.ADD){
-               const tmpState1 = await nextActionState.sendSUM(new SUM(nextActionState.message.add+val));
+               const tmpState1 = await nextActionState.send_SUM_to_Colin(new SUM(nextActionState.message.add+val));
                console.log(`SUM sended`);
                const tmpState2 = await tmpState1.recv();
                messageType=tmpState2.messageType;
@@ -26,7 +26,7 @@ async function protocol(s1:Simon_Start):Promise<Simon_End> {
                break;
             }
             if (nextActionState.messageType === messages.MUL){
-               const tmpState1 = await nextActionState.sendPRD(new PRD(nextActionState.message.mul*val));
+               const tmpState1 = await nextActionState.send_PRD_to_Colin(new PRD(nextActionState.message.mul*val));
                console.log(`PRD sended`);
                const tmpState2 = await tmpState1.recv();
                messageType=tmpState2.messageType;

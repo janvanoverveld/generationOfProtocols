@@ -2,11 +2,11 @@ import {C_Start,IC_S5, executeProtocol, C_End, messages} from './C';
 import {REQUESTL,HOST,USERA,ACCEPT,ACCEPTL,ACCEPTE,DNT,CONNECTION,UPGRADEIR,BODY,HTTPV,HTTP200,HTTP404,DATE,SERVER,STRICTTS,LASTM,ETAG,ACCEPTR,CONTENTL,VARY,CONTENTT,VIA} from './Message';
 
 async function protocol(s1:C_Start):Promise<C_End> {
-   const t1 = await s1.sendREQUESTL(new REQUESTL('request tl'));
-   const t2 = await t1.sendHOST(new DNT('localhost'));
-   const t3 = await t2.sendUSERA(new UPGRADEIR('mr. client'));
-   const t4 = await t3.sendACCEPT(new ACCEPT('accepter'));
-   const t5 = await t4.sendBODY(new BODY('the body of the message'));
+   const t1 = await s1.send_REQUESTL_to_S(new REQUESTL('request tl'));
+   const t2 = await t1.send_HOST_to_S(new DNT('localhost'));
+   const t3 = await t2.send_USERA_to_S(new UPGRADEIR('mr. client'));
+   const t4 = await t3.send_ACCEPT_to_S(new ACCEPT('accepter'));
+   const t5 = await t4.send_BODY_to_S(new BODY('the body of the message'));
    const t6 = await t5.recv();
    console.log(`The received http version from the client is : ${t6.message.value}`);
    const t7 = await t6.recv();

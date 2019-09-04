@@ -7,10 +7,10 @@ async function protocol(s1:Colin_Start):Promise<Colin_End> {
       // uitvoeren van een add
       const val1 = new VAL(Math.floor(Math.random() * 8));
       console.log(`Stuur VAL met waarden van ${val1.val}`);
-      const s2a = await s1.sendVAL(val1);
+      const s2a = await s1.send_VAL_to_Simon(val1);
       const add=new ADD(Math.floor(Math.random()*8));
       console.log(`Stuur ADD met waarden van ${add.add}`);
-      const s4 = await s2a.sendADD(add);
+      const s4 = await s2a.send_ADD_to_Simon(add);
       const s1_1 = await s4.recv();
       console.log(`RES heeft waarde van ${s1_1.message.sum}`);
       s1=s1_1;
@@ -18,16 +18,16 @@ async function protocol(s1:Colin_Start):Promise<Colin_End> {
       // uitvoeren van een prod
       const val2 = new VAL(Math.floor(Math.random() * 8));
       console.log(`Stuur VAL met waarden van ${val2.val}`);
-      const s2b = await s1.sendVAL(val2);
+      const s2b = await s1.send_VAL_to_Simon(val2);
       const mul=new MUL(Math.floor(Math.random()*8));
       console.log(`Stuur MUL met waarden van ${mul.mul}`);
-      const s5 = await s2b.sendMUL(mul);
+      const s5 = await s2b.send_MUL_to_Simon(mul);
       const s1_2 = await s5.recv();
       console.log(`RES heeft waarde van ${(s1_2.message).prd}`);
-      s1=s1_2;      
+      s1=s1_2;
    }
    let bye=new BYE();
-   let done=s1.sendBYE(bye);
+   let done=s1.send_BYE_to_Simon(bye);
    return new Promise( resolve => resolve( done ) );
 }
 

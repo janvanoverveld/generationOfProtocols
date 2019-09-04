@@ -9,16 +9,16 @@ async function protocol(s1:agency_Start):Promise<agency_End> {
       switch (customerReq.messageType) {
          case messages.QUERY:{
             const price = new PRICE(Math.floor(Math.random() * 1000));
-            const ts1 = await customerReq.sendPRICE(price);
-            s1 = await ts1.sendINFO(new INFO(`This is a trip to ${customerReq.message.journey} for ${price.price} euro.`));
+            const ts1 = await customerReq.send_PRICE_to_customer(price);
+            s1 = await ts1.send_INFO_to_service(new INFO(`This is a trip to ${customerReq.message.journey} for ${price.price} euro.`));
             break;
          }
          case messages.ACCEPT: {
-            const done = await customerReq.sendACCEPT(new ACCEPT());
+            const done = await customerReq.send_ACCEPT_to_service(new ACCEPT());
             return new Promise( resolve => resolve(done) );
          }
          case messages.REJECT: {
-            const done = await customerReq.sendREJECT(new REJECT());
+            const done = await customerReq.send_REJECT_to_service(new REJECT());
             return new Promise( resolve => resolve(done) );
          }
       }

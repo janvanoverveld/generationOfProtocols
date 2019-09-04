@@ -15,7 +15,7 @@ async function protocol(s1:Bob_Start):Promise<Bob_End> {
             const add = s2.message;
             const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar Alice `);
-            const tmpState1 = await s2.sendRES(res);
+            const tmpState1 = await s2.send_RES_to_Alice(res);
             const tmpState2 = await tmpState1.recv();
             messageType = tmpState2.messageType;
             messageFrom = tmpState2.messageFrom;
@@ -28,7 +28,7 @@ async function protocol(s1:Bob_Start):Promise<Bob_End> {
             const add = <ADD> s3.message;
             const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar fred `);
-            const tmpState1 = await s3.sendRES(res);
+            const tmpState1 = await s3.send_RES_to_Fred(res);
             const tmpState2 = await tmpState1.recv();
             messageType = tmpState2.messageType;
             messageFrom = tmpState2.messageFrom;
@@ -57,11 +57,11 @@ async function protocol(s1:Bob_Start):Promise<Bob_End> {
             break;
          }
          case roles.alice + messages.ADD: {
-            const s6 = <IBob_S6>nextState;
-            const add = s6.message;
+            const s = <IBob_S8>nextState;
+            const add = s.message;
             const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar Alice `);
-            const tmpState1 = await s6.sendRES(res);
+            const tmpState1 = await s.send_RES_to_Alice(res);
             const tmpState2 = await tmpState1.recv();
             messageType = tmpState2.messageType;
             messageFrom = tmpState2.messageFrom;
@@ -70,11 +70,11 @@ async function protocol(s1:Bob_Start):Promise<Bob_End> {
             break;
          }
          case roles.fred + messages.ADD: {
-            const s8 = <IBob_S8>nextState;
-            const add = <ADD> s8.message;
+            const s = <IBob_S6>nextState;
+            const add = <ADD> s.message;
             const res = new RES( add.value1 + add.value2 );
             console.log(`stuur ${res.name} ${res.sum} naar Fred `);
-            const tmpState1 = await s8.sendRES(res);
+            const tmpState1 = await s.send_RES_to_Fred(res);
             const tmpState2 = await tmpState1.recv();
             messageType = tmpState2.messageType;
             messageFrom = tmpState2.messageFrom;

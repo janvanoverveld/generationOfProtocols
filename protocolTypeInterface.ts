@@ -26,6 +26,14 @@ export interface RootObject {
 //
 // types for generating code INTERFACES
 //
+export type sendMethod = {
+    name:string;
+    msgName:string;
+    msgType:string;
+    msgTo:string;
+    return:string;
+}
+
 export type objProperty = {
     name: string;
     type?: string;
@@ -35,17 +43,11 @@ export type objProperty = {
     default?: string;
 }
 
-export type objMethod = {
-    name:string;
-    props:objProperty[];
-    return:string[];
-    promise:boolean;
-}
-
 export type StateInterface = {
     name:string;
     props:objProperty[];
-    methods:objMethod[];
+    sendMethods:sendMethod[];
+    recvInterfaces:string[];
     inherit?:string;
     stateType:string;
     role:string;

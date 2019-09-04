@@ -1,4 +1,4 @@
-import {message,receivedMessagesInState,Transition,State,Protocol,RootObject,StateInterface,objProperty,objMethod,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
+import {message,receivedMessagesInState,Transition,State,Protocol,RootObject,StateInterface,objProperty,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
 import {getStateInterfaces,getInterfacesAsText,showInterfaces} from './stateInterfaces';
 import {getTextFromStateClasses,getStateClassDefinitions, showClasses} from './stateClasses';
 import * as ts from "typescript";
