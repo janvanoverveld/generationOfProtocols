@@ -1,4 +1,4 @@
-import {ROLEMESSAGE,Message,READY} from './Message';
+import {ROLEMESSAGE,Message} from './Message';
 import {receiveMessageServer} from './receiveMessageServer';
 import {sendMessage} from './sendMessage';
 import {messageDB} from './messageDB';
@@ -82,15 +82,15 @@ export async function initialize(roleName:roles, port:number, host:string){
    connectedRoles.save(roleName,host,port);
    await sendMessage( roleName, roles.mediator, new ROLEMESSAGE(roleName) );
    while ( true ) {
-       const msg = await messageDB.remove((m)=>m.name===ROLEMESSAGE.name||m.name===READY.name);
+       const msg = await messageDB.remove((m)=>m.name===ROLEMESSAGE.name);
        if ( msg.name === ROLEMESSAGE.name) {
            connectedRoles.save(msg);
        };
-       if ( msg.name === READY.name) {
+       const missingRoles = Object.values(roles).filter( (role) => connectedRoles.missing(role) );
+       if ( missingRoles.length === 0){
            break;
        }
    }
-   await sleep(1000);
 }
 
 //
@@ -106,3 +106,4 @@ export class OneTransitionPossibleException extends Error {
         return this.name + ': ' + this.message;
     }
 }
+

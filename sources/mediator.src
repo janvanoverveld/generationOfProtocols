@@ -1,5 +1,5 @@
 import {receiveMessageServer} from './receiveMessageServer';
-import {ROLEMESSAGE, READY} from './Message';
+import {ROLEMESSAGE} from './Message';
 import {sendMessage} from './sendMessage';
 import {roles, connectedRoles} from './globalObjects';
 import {messageDB} from './messageDB';
@@ -22,12 +22,9 @@ async function initProtocolByMediator(){
         const relevantRoles = allRoles.filter( (role) => role !== roles.mediator );
 
         for ( let i=0; i<relevantRoles.length; i++ ) {
-            for ( let j=0; j<allRoles.length; j++ ) {
-                await sendMessage( roles.mediator, relevantRoles[i], new ROLEMESSAGE(allRoles[j]) );
+            for ( let j=0; j<relevantRoles.length; j++ ) {
+                if (i!=j) sendMessage( roles.mediator, relevantRoles[i], new ROLEMESSAGE(relevantRoles[j]) );
             }
-        }
-        for ( let i=0; i<relevantRoles.length; i++ ) {
-            await sendMessage( roles.mediator, relevantRoles[i], new READY() );
         }
 
         receiveMessageServer.terminate();

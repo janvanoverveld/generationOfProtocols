@@ -13,7 +13,6 @@ const cInitial     = 'initial';
 const cFinal       = 'final';
 const cMessageEnum = 'messages';
 const cExecutePro  = 'executeProtocol';
-const cNoMessage   = 'NOMESSAGE';
 const idResolve    = ts.createIdentifier('resolve');
 const idPromise    = ts.createIdentifier('Promise');
 
@@ -27,7 +26,7 @@ function getImportDefinition(fileName:string, importObjects:string[]):string {
 function getImportDefinitions(messages:string[]):string {
    let importCode:string='';
    importCode += getImportDefinition('./receiveMessageServer',['receiveMessageServer']);
-   importCode += getImportDefinition('./Message', messages.concat(['Message',cNoMessage]) );
+   importCode += getImportDefinition('./Message', messages.concat(['Message']) );
    importCode += getImportDefinition('./sendMessage',['sendMessage']);
    importCode += getImportDefinition('./globalObjects',['roles','initialize','connectedRoles','OneTransitionPossibleException']);
    importCode += getImportDefinition('./messageDB',['messageDB']);
