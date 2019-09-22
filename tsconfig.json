@@ -65,7 +65,8 @@
     "createStateObjects.ts",
     "createGlobalObjects.ts",
     "stateInterfaces.ts",
-    "stateClasses",    
-    "generate.ts"
+    "stateClasses",
+    "createProtocolFrameWork.ts",
+    "start.ts"
     ]
 }

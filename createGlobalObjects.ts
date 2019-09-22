@@ -1,13 +1,12 @@
-import {Transition,State,Protocol,RootObject} from './protocolTypeInterface';
 import * as ts from "typescript";
 
-function getEnumWithRoles(protocols:Protocol[]):string{
+function getEnumWithRoles(roles:string[]):string{
     let enumMembers:ts.EnumMember[]=[];
-    protocols.forEach((e)=>{
+    roles.forEach((e)=>{
         enumMembers.push(
             ts.createEnumMember(
-                ts.createIdentifier(`${e.role.toLowerCase()}`)
-               ,ts.createStringLiteral(`${e.role.charAt(0).toUpperCase()}${e.role.slice(1).toLowerCase()}` ) )
+                ts.createIdentifier(`${e.toLowerCase()}`)
+               ,ts.createStringLiteral(`${e.charAt(0).toUpperCase()}${e.slice(1).toLowerCase()}` ) )
         );
     });
     const resultFile = ts.createSourceFile("dummy.ts","",ts.ScriptTarget.Latest,false,ts.ScriptKind.TS);
