@@ -1,92 +1,75 @@
-import {Transition,State,Protocol,RootObject} from './protocolTypeInterface';
-import {getStateObjects} from './createStateObjects';
-import {getEnumWithRoles} from './createGlobalObjects';
+import {GlobalProtocolDefinition} from './interfacesAndDatatypes/globalProtocolDefinition';
+import {getProtocolApiForLocalProtocol} from './createLocalProtocolAPI';
 import rimraf from 'rimraf';
 import * as fs from 'fs';
 import * as child from 'child_process';
+import * as ts from "typescript";
 
-async function sleep(ms:number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+const capitalize = (s:string) => s.charAt(0).toUpperCase() + s.slice(1);
+const readFile:(path:string)=>Promise<string> = (p) => new Promise( (resolve, reject) => fs.readFile( p, 'utf8', (err, data) => { if (err) reject(err); else resolve(data); } ) );
+const writeFile:(path:string,data:string)=>Promise<void> = (p,d) => new Promise( (resolve, reject) => fs.writeFile(p, d, 'utf8', (err) => { if (err) reject(err); else resolve(); }) );
+
+const fileNameGlobalObjects = 'globalObjects.src';
+const fileNameMessages      = 'Message.src';
+const fileNameExtraMessages = 'ExtraMessages.src';
+const globalSourceLocation  = 'sources/_global/';
+
+function getEnumWithRoles(roles:string[]):string{
+    let enumMembers:ts.EnumMember[]=[];
+    roles.forEach((e)=>{
+        enumMembers.push(
+            ts.createEnumMember(
+                ts.createIdentifier(`${e.toLowerCase()}`)
+               ,ts.createStringLiteral(`${e.charAt(0).toUpperCase()}${e.slice(1).toLowerCase()}` ) )
+        );
+    });
+    const resultFile = ts.createSourceFile("dummy.ts","",ts.ScriptTarget.Latest,false,ts.ScriptKind.TS);
+    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
+    const rolesEnum:ts.EnumDeclaration=ts.createEnumDeclaration(undefined, undefined, ts.createIdentifier('roles'), enumMembers);
+    return printer.printNode( ts.EmitHint.Unspecified, rolesEnum, resultFile );
 }
 
-function displayProtocol(proto:RootObject){
-    console.log(proto.roles);
-    for ( let p of proto.protocol  ){
-        console.log(`${p.role}`);
-        for ( let state of p.states ){
-            console.log(`  ${state.name}  ${state.type}`);
-            if (state.transitions) state.transitions.forEach( (trans) => console.log(`      ${trans.next} ${trans.op} ${trans.message}`) );
-        }
-    }
-}
-
-function readFile (path:string, opts = 'utf8'):Promise<string>{
-    return new Promise(
-        (resolve, reject) => {
-            fs.readFile( path, opts, (err, data) => { if (err) reject(err); else resolve(data); } )
-        }
-    );
-}
-
-function writeFile (path:string, data:string, opts = 'utf8'):Promise<void> {
-   return new Promise(
-      (resolve, reject) => {
-         fs.writeFile(path, data, opts, (err) => { if (err) reject(err); else resolve(); })
-      }
+async function generateProjectFiles(protocolSpec:GlobalProtocolDefinition,targetLocation:string,extraSourceFilesLoc:string){
+   console.log(`writing sourcefiles for ${extraSourceFilesLoc} `);
+   const srcFiles              = fs.readdirSync(globalSourceLocation).filter((f)=>f.includes('.src'));
+   const extraMessagesTxt      = await readFile(extraSourceFilesLoc + fileNameExtraMessages );
+   for ( const srcFile of srcFiles ){
+       // console.log(`writing sourcefile ${srcFile} `);
+       let textFromSource = await readFile( globalSourceLocation + srcFile );
+       if (srcFile === fileNameGlobalObjects){
+           const roles:string[] = [];
+           protocolSpec.protocol.forEach( (e) => roles.push(e.role) );
+           textFromSource += getEnumWithRoles(roles);
+       }
+       if (srcFile === fileNameMessages){
+           textFromSource += extraMessagesTxt;
+       }
+       const targetFileName = srcFile.search('json')>0?srcFile.replace('.src',''):srcFile.replace('.src','.ts');
+       await writeFile(targetLocation + targetFileName,textFromSource);
+   }
+   //
+   // process rest of extra files, specific for example. (the use of the protocol api, tsconfig, package.json, )
+   const specificRepoSourceFiles = fs.readdirSync(extraSourceFilesLoc).filter((f)=>f.includes('.src')&&f!==fileNameExtraMessages);
+   for ( const xSrcFile of specificRepoSourceFiles ){
+       //console.log(`writing sourcefile ${xSrcFile} `);
+       let textFromSource = await readFile( extraSourceFilesLoc + xSrcFile );
+       let targetFileName = xSrcFile.search('json')>0?xSrcFile.replace('.src',''):xSrcFile.replace('.src','.ts');
+       await writeFile(targetLocation + targetFileName,textFromSource);
+   }
+   //
+   //
+   console.log(`Generate the protocol api`);
+   protocolSpec.protocol.forEach(
+       proto => writeFile(targetLocation + proto.role + '.ts',getProtocolApiForLocalProtocol(proto))
    );
-}
-
-async function generateProjectFiles(protocolSpec:RootObject,targetLocation:string,extraSourceFilesLoc:string){
-    console.log(`writing sourcefiles for ${extraSourceFilesLoc} `);
-    const fileNameGlobalObjects = 'globalObjects.src';
-    const fileNameMessages      = 'Message.src';
-    const fileNameExtraMessages = 'ExtraMessages.src';
-    const globalSourceLocation  = 'sources/_global/';
-    const srcFiles              = fs.readdirSync(globalSourceLocation).filter((f)=>f.includes('.src'));
-    const extraMessagesTxt      = await readFile(extraSourceFilesLoc + fileNameExtraMessages );
-    for ( const srcFile of srcFiles ){
-        // console.log(`writing sourcefile ${srcFile} `);
-        let textFromSource = await readFile( globalSourceLocation + srcFile );
-        if (srcFile === fileNameGlobalObjects){
-            const roles:string[] = [];
-            protocolSpec.protocol.forEach( (e) => roles.push(e.role) );
-            textFromSource += getEnumWithRoles(roles);
-        }
-        if (srcFile === fileNameMessages){
-            textFromSource += extraMessagesTxt;
-        }
-        let targetFileName = srcFile.search('json')>0?srcFile.replace('.src',''):srcFile.replace('.src','.ts');
-        await writeFile(targetLocation + targetFileName,textFromSource);
-    }
-    //
-    // process rest of extra files per protocol
-    const specificRepoSourceFiles = fs.readdirSync(extraSourceFilesLoc).filter((f)=>f.includes('.src')&&f!==fileNameExtraMessages);
-    for ( const xSrcFile of specificRepoSourceFiles ){
-        //console.log(`writing sourcefile ${xSrcFile} `);
-        let textFromSource = await readFile( extraSourceFilesLoc + xSrcFile );
-        let targetFileName = xSrcFile.search('json')>0?xSrcFile.replace('.src',''):xSrcFile.replace('.src','.ts');
-        await writeFile(targetLocation + targetFileName,textFromSource);
-    }
-
-    console.log(`Aanmaken klassen van de states`);
-    // creatie van de state klassen van de rollen
-    protocolSpec.protocol.forEach(
-        (proto) => {
-            let classText = getStateObjects(proto);
-            writeFile(targetLocation + proto.role + '.ts',classText);
-        }
-    );
 }
 
 async function createProtocolFrameWork(sourceProtocolJson:string, repoSourceLocation:string, startTargetRepo:boolean ):Promise<void>
 {
     console.log(`generatie repository o.b.v. ${sourceProtocolJson}`);
     const protocolData = await readFile ( repoSourceLocation+sourceProtocolJson);
-    const protoSpec:RootObject = JSON.parse(protocolData);
-
-    const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-    let rolePartOfName = protoSpec.roles.sort().reduce( (ret,role) => ret+=capitalize(role) );
-    rolePartOfName = capitalize(rolePartOfName);
+    const protoSpec:GlobalProtocolDefinition = JSON.parse(protocolData);
+    const rolePartOfName = capitalize(protoSpec.roles.sort().reduce( (ret,role) => ret+=capitalize(role) ));
     const targetRepoName = `../generated${rolePartOfName}/`;
 
     if (fs.existsSync(targetRepoName)) {
@@ -100,9 +83,9 @@ async function createProtocolFrameWork(sourceProtocolJson:string, repoSourceLoca
 
     await generateProjectFiles(protoSpec,targetRepoName,repoSourceLocation);
 
-    var repoGeneratorResolver: () => void;
+    let repoGeneratorResolver: () => void;
 
-    // startup generated code?
+    // startup generated code and wait for execution?
     if ( startTargetRepo ) {
         console.log(`opstarten repository o.b.v. ${sourceProtocolJson}  en tonen output`);
         child.exec('npm start', {cwd:`${targetRepoName}`}
@@ -114,9 +97,9 @@ async function createProtocolFrameWork(sourceProtocolJson:string, repoSourceLoca
                         } );
     } else{
         console.log(`einde van het generatie process o.b.v. ${sourceProtocolJson}`);
-        return new Promise( (resolve) => resolve());
+        return new Promise( resolve => resolve());
     }
-    return new Promise ( ( resolve ) => repoGeneratorResolver=resolve );
+    return new Promise ( resolve => repoGeneratorResolver=resolve );
 }
 
 export {createProtocolFrameWork}

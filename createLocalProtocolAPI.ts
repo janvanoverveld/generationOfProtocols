@@ -1,9 +1,11 @@
-import {message,receivedMessagesInState,Transition,State,Protocol,RootObject,StateInterface,objProperty,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
+import {StateInterface,objProperty} from './interfacesAndDatatypes/localProtocolInterfaceData';
+import {StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './interfacesAndDatatypes/localProtocolClassData';
+import {message,receivedMessagesInState} from './interfacesAndDatatypes/messageDataTypes';
+import {Transition,State,LocalProtocolDefinition,displayProtocol} from './interfacesAndDatatypes/globalProtocolDefinition';
 import {getStateInterfaces,getInterfacesAsText,showInterfaces} from './stateInterfaces';
 import {getTextFromStateClasses,getStateClassDefinitions, showClasses} from './stateClasses';
 import * as ts from "typescript";
 
-const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const resultFile = ts.createSourceFile("dummy.ts","",ts.ScriptTarget.Latest,false,ts.ScriptKind.TS);
 const printer    = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
 const printCode  = (node:ts.Node) => printer.printNode( ts.EmitHint.Unspecified, node, resultFile );
@@ -110,7 +112,7 @@ function getPossibleOriginatedStates(stateName:string, states:State[]):string[]{
     return Array.from(new Set(oriStates));
 }
 
-function getMessagesFromProtocol(protocol:Protocol){
+function getMessagesFromProtocol(protocol:LocalProtocolDefinition){
     let messages:string[]=[];
     protocol.states.forEach( (s) => {
         if (s.transitions)
@@ -205,18 +207,19 @@ function getPublicExportsAsText(publicExports:string[]):string{
     return printCode(exportDeclaration) + ts.sys.newLine + ts.sys.newLine;
 }
 
-function getStateObjects( protocol:Protocol ):string{
-    console.log(`start getStateObjects  ${protocol.role}`);
+function getProtocolApiForLocalProtocol( protocol:LocalProtocolDefinition ):string{
+    console.log(`start getProtocolApiForLocalProtocol  ${protocol.role}`);
 
-    // get states and messages that led to the state (these will be properties), Map with key for every state and a array with the messages that can lead to the state
-    let receivedMessagesInState:receivedMessagesInState = new Map();
+    // get states and messages that led to the state (these will be properties), 
+    // Map with key for every state and a array with the messages that can led to the state
+    const receivedMessagesInState:receivedMessagesInState = new Map();
     protocol.states.forEach( (s) => {
         receivedMessagesInState.set(s.name,getReceivedMessagesForState(s.name,protocol.states));
     } );
     // debug
     // receivedMessagesInState.forEach((val,key)=> console.log(`${key}  ----  ${val}`));
 
-    let stateWithPossibleOriginStates:Map<string,string[]> = new Map();
+    const stateWithPossibleOriginStates:Map<string,string[]> = new Map();
     protocol.states.forEach( (s) => {
        stateWithPossibleOriginStates.set(s.name,getPossibleOriginatedStates(s.name,protocol.states));
     })
@@ -273,4 +276,4 @@ function getStateObjects( protocol:Protocol ):string{
     return returnTxt;
 }
 
-export {getStateObjects};
+export {getProtocolApiForLocalProtocol};

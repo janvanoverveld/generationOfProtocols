@@ -1,4 +1,6 @@
-import {message,receivedMessagesInState,Transition,State,Protocol,RootObject,sendMethod,StateInterface,objProperty,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
+import {StateInterface,objProperty,sendMethod} from './interfacesAndDatatypes/localProtocolInterfaceData';
+import {message,receivedMessagesInState} from './interfacesAndDatatypes/messageDataTypes';
+import {Transition,State,displayProtocol} from './interfacesAndDatatypes/globalProtocolDefinition';
 import * as ts from "typescript";
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);

@@ -1,4 +1,7 @@
-import {message,receivedMessagesInState,Transition,State,Protocol,RootObject,StateInterface,objProperty,StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './protocolTypeInterface';
+import {StateInterface,objProperty} from './interfacesAndDatatypes/localProtocolInterfaceData';
+import {StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './interfacesAndDatatypes/localProtocolClassData';
+import {message,receivedMessagesInState} from './interfacesAndDatatypes/messageDataTypes';
+import {Transition,State,displayProtocol,LocalProtocolDefinition} from './interfacesAndDatatypes/globalProtocolDefinition';
 import * as ts from "typescript";
 
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -105,7 +108,7 @@ function createStateClassDefinition(role:string,state:State,receivedMsgPerStateM
    return stateClass;
 }
 
-function getStateClassDefinitions(protocol:Protocol,receivedMsgPerStateMap:receivedMessagesInState,stateWithPossibleOriginStates:Map<string,string[]>):StateClass[]{
+function getStateClassDefinitions(protocol:LocalProtocolDefinition,receivedMsgPerStateMap:receivedMessagesInState,stateWithPossibleOriginStates:Map<string,string[]>):StateClass[]{
     const stateClasses:StateClass[]=[];
     protocol.states.forEach(
         (state) => {
