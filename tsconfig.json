@@ -62,10 +62,16 @@
     // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
   },
   "files": [
-    "createLocalProtocolAPI.ts",
-    "stateInterfaces.ts",
-    "stateClasses",
-    "createProtocolFrameWork.ts",
+    "includedCustomLibraries/globalProtocolDefinition.ts",
+    "includedCustomLibraries/localProtocolClassData.ts",
+    "includedCustomLibraries/localProtocolInterfaceData.ts",
+    "includedCustomLibraries/messageDataTypes.ts",
+    "localProtocolAPI/createLocalProtocolAPI.ts",
+    "localProtocolAPI/stateInterfacesMetaData.ts",
+    "localProtocolAPI/stateInterfacesText.ts",
+    "localProtocolAPI/stateClassesMetaData.ts",
+    "localProtocolAPI/stateClassesText.ts",
+    "generateGlobalProtocolProject.ts",
     "start.ts"
     ]
 }

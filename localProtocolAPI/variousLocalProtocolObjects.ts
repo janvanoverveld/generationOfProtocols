@@ -1,22 +1,38 @@
-import {StateInterface,objProperty} from './interfacesAndDatatypes/localProtocolInterfaceData';
-import {StateClass,objReceiveMethod,objSendMethod,objToReceiveMessages} from './interfacesAndDatatypes/localProtocolClassData';
-import {message,receivedMessagesInState} from './interfacesAndDatatypes/messageDataTypes';
-import {Transition,State,LocalProtocolDefinition,displayProtocol} from './interfacesAndDatatypes/globalProtocolDefinition';
-import {getStateInterfaces,getInterfacesAsText,showInterfaces} from './stateInterfaces';
-import {getTextFromStateClasses,getStateClassDefinitions, showClasses} from './stateClasses';
 import * as ts from "typescript";
+import {printCode} from '../includedCustomLibraries/sharedFunctions';
+import {StateClass} from '../includedCustomLibraries/localProtocolClassData';
+import {StateInterface} from '../includedCustomLibraries/localProtocolInterfaceData';
 
-const resultFile = ts.createSourceFile("dummy.ts","",ts.ScriptTarget.Latest,false,ts.ScriptKind.TS);
-const printer    = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-const printCode  = (node:ts.Node) => printer.printNode( ts.EmitHint.Unspecified, node, resultFile );
-
+const cMessageEnum = 'messages';
 const cReceive     = 'recv';
 const cInitial     = 'initial';
 const cFinal       = 'final';
-const cMessageEnum = 'messages';
 const cExecutePro  = 'executeProtocol';
+const cSend          = 'send';
+const cAbstractState = 'abstractState';
+const cMsgFrom       = 'messageFrom';
+const cMsgType       = 'messageType';
+const cMsg           = 'message';
+const cMsgs          = 'messages';
+const cRoles         = 'roles';
+//
 const idResolve    = ts.createIdentifier('resolve');
 const idPromise    = ts.createIdentifier('Promise');
+const idMsgFrom = ts.createIdentifier(cMsgFrom);
+const idMsgType = ts.createIdentifier(cMsgType);
+const idMsg     = ts.createIdentifier(cMsg);
+const idRoles   = ts.createIdentifier(cRoles);
+const idMsgs    = ts.createIdentifier(cMsgs);
+const idPropReadOnly = [ts.createModifier(ts.SyntaxKind.ReadonlyKeyword)];
+const idReject  = ts.createIdentifier('reject');
+const idReceive = ts.createIdentifier(cReceive);
+const idPublic       = [ts.createModifier(ts.SyntaxKind.PublicKeyword)];
+
+// export constants
+export {cMessageEnum,cReceive,cInitial,cFinal,cExecutePro,cSend,cAbstractState,cMsgFrom,cMsgType,cMsg,cMsgs,cRoles,idResolve,idPromise,idMsgFrom,idMsgType,idMsg,idRoles,idMsgs,idPropReadOnly,idReject,idReceive,idPublic  }
+
+const getStartInterface = (role:string) => `${role}_Start`;
+const getEndInterface   = (role:string) => `${role}_End`;
 
 function getImportDefinition(fileName:string, importObjects:string[]):string {
     const fileStringLiteral = ts.createStringLiteral(fileName);
@@ -74,61 +90,22 @@ function getStateAbstractClass(role:string):string{
   const implementsInterface = [ ts.createHeritageClause(ts.SyntaxKind.FirstFutureReservedWord, [ ts.createExpressionWithTypeArguments( undefined, ts.createIdentifier(`I${role}`) ) ]) ];
   const abstractClass = ts.createClassDeclaration( undefined, [ts.createModifier(ts.SyntaxKind.AbstractKeyword)], ts.createIdentifier(role), undefined, implementsInterface, classMembers );
 
-  return printCode(abstractClass) + ts.sys.newLine;
+  return printCode(abstractClass) + ts.sys.newLine + ts.sys.newLine;
 }
 
-function getReceivedMessagesForState(stateName:string, states:State[]):message[]{
-    let messages:message[]=[];
-    states.forEach(
-        (state) => {
-           if (state.transitions)
-               state.transitions.forEach(
-                   (t) => {
-                       //console.log(`${stateName}  ${state.name}   ${t.next }   ${t.op}  ${t.message}  ${t.role}`);
-                       if ( t.next === stateName && t.op === cReceive ) {
-                           messages.push({name:t.message,from:t.role});
-                       }
-                   }
-               );
-        }
-    );
-    return Array.from(new Set(messages));
-}
-
-function getPossibleOriginatedStates(stateName:string, states:State[]):string[]{
-    let oriStates:string[]=[];
-    states.forEach(
-        (state) => {
-           if (state.transitions)
-               state.transitions.forEach(
-                   (t) => {
-                       if ( t.next === stateName ) {
-                           oriStates.push(state.name);
-                       }
-                   }
-               );
-        }
-    );
-    return Array.from(new Set(oriStates));
-}
-
-function getMessagesFromProtocol(protocol:LocalProtocolDefinition){
-    let messages:string[]=[];
-    protocol.states.forEach( (s) => {
-        if (s.transitions)
-            s.transitions.forEach(
-                (t)=>messages.push(t.message)
-            );
-    } );
-    return Array.from(new Set(messages));
-}
-
-function getStartInterface(role:string){
-    return `${role}_Start`;
-}
-
-function getEndInterface(role:string){
-    return `${role}_End`;
+function getPublicExportsAsText(role:string,stateInterfaces:StateInterface[]):string{
+    const publicExports:string[]=[];
+    stateInterfaces.forEach( i => { if (i.stateType!==cInitial && i.stateType !== cFinal ) publicExports.push(i.name); }  );
+    publicExports.push(cMessageEnum);
+    publicExports.push(getStartInterface(role));
+    publicExports.push(getEndInterface(role));
+    publicExports.push(cExecutePro);
+    publicExports.push('roles');
+    //
+    const exportsSpecifiers:ts.ExportSpecifier[]=[];
+    publicExports.forEach( ( exp ) => exportsSpecifiers.push(ts.createExportSpecifier( undefined, ts.createIdentifier(exp) ) ) );
+    const exportDeclaration=ts.createExportDeclaration(undefined,undefined,ts.createNamedExports(exportsSpecifiers),undefined);
+    return printCode(exportDeclaration) + ts.sys.newLine + ts.sys.newLine;
 }
 
 function getStartAndEndTypes(role:string,stateClasses:StateClass[]):string{
@@ -200,80 +177,5 @@ function getExecuteProtocolFunction(stateClasses:StateClass[]){
     return printCode(executeProtocolFunction) + ts.sys.newLine + ts.sys.newLine;
 }
 
-function getPublicExportsAsText(publicExports:string[]):string{
-    const exportsSpecifiers:ts.ExportSpecifier[]=[];
-    publicExports.forEach( ( exp ) => exportsSpecifiers.push(ts.createExportSpecifier( undefined, ts.createIdentifier(exp) ) ) );
-    const exportDeclaration=ts.createExportDeclaration(undefined,undefined,ts.createNamedExports(exportsSpecifiers),undefined);
-    return printCode(exportDeclaration) + ts.sys.newLine + ts.sys.newLine;
-}
-
-function getProtocolApiForLocalProtocol( protocol:LocalProtocolDefinition ):string{
-    console.log(`start getProtocolApiForLocalProtocol  ${protocol.role}`);
-
-    // get states and messages that led to the state (these will be properties), 
-    // Map with key for every state and a array with the messages that can led to the state
-    const receivedMessagesInState:receivedMessagesInState = new Map();
-    protocol.states.forEach( (s) => {
-        receivedMessagesInState.set(s.name,getReceivedMessagesForState(s.name,protocol.states));
-    } );
-    // debug
-    // receivedMessagesInState.forEach((val,key)=> console.log(`${key}  ----  ${val}`));
-
-    const stateWithPossibleOriginStates:Map<string,string[]> = new Map();
-    protocol.states.forEach( (s) => {
-       stateWithPossibleOriginStates.set(s.name,getPossibleOriginatedStates(s.name,protocol.states));
-    })
-    //for ( let key of stateWithPossibleOriginStates.keys() ){
-    //    console.log(`state ${key}  comes from ${stateWithPossibleOriginStates.get(key)}`);
-    //}
-    // get possible messages in the protocol
-    const protocolMessages=getMessagesFromProtocol(protocol).map((s)=>s.toUpperCase());
-
-    // create import definitions
-    let returnTxt=getImportDefinitions(protocolMessages);
-
-    // create a enum with the different Messages
-    returnTxt += getEnumWithMessages(protocolMessages);
-
-    // get interfaces
-    const stateInterfaces:StateInterface[]=getStateInterfaces(protocol.role, protocol.states, receivedMessagesInState,stateWithPossibleOriginStates);
-    // debug, show interfaces
-    //showInterfaces(stateInterfaces);
-
-    // get classes
-    const stateClasses = getStateClassDefinitions(protocol,receivedMessagesInState,stateWithPossibleOriginStates);
-    // debug show classes
-    //showClasses(stateClasses);
-
-    // revert interfaces to text
-    returnTxt += getInterfacesAsText(stateInterfaces);
-
-    // get role abstract class as text
-    returnTxt += getStateAbstractClass(protocol.role) + ts.sys.newLine;
-
-    // revert classes to text
-    returnTxt += getTextFromStateClasses(stateClasses);
-
-    // get start and End types
-    returnTxt += getStartAndEndTypes(protocol.role,stateClasses);
-
-    // create executeProtocol function
-    returnTxt += getExecuteProtocolFunction(stateClasses);
-
-    // create exports
-    const publicExports:string[]=[];
-    stateInterfaces.forEach( ( inf ) => {
-        if (inf.stateType!==cInitial && inf.stateType !== cFinal ) publicExports.push(inf.name);
-    }  );
-    publicExports.push(cMessageEnum);
-    publicExports.push(getStartInterface(protocol.role));
-    publicExports.push(getEndInterface(protocol.role));
-    publicExports.push(cExecutePro);
-    publicExports.push('roles');
-
-    returnTxt += getPublicExportsAsText(publicExports);
-
-    return returnTxt;
-}
-
-export {getProtocolApiForLocalProtocol};
+// export functions
+export { getStartInterface,getEndInterface,getImportDefinitions,getEnumWithMessages,getStateAbstractClass,getPublicExportsAsText,getStartAndEndTypes,getExecuteProtocolFunction}
