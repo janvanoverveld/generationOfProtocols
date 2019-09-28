@@ -53,7 +53,7 @@ async function createProtocolFrameWork(sourceProtocolJson:string, repoSourceLoca
 }
 
 async function starter(pars:string[]){
-    console.log(`${new Date()}  parameter 1 = ${pars[2]}  parameter 2 = ${pars[3]}`);
+    console.log(`${new Date()}  example = ${pars[2].toUpperCase()}  startup = ${pars[3].toUpperCase()}`);
     let opstartenRepo:boolean=false;
     let protocolExample = protocolExamples.get('A');
     if ( pars[3] && pars[3].toLowerCase() === 'j' ) opstartenRepo = true;
