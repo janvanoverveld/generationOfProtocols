@@ -1,0 +1,52 @@
+import {s1_Start,s1_End,Is1_S2,executeProtocol, messages} from './s1';
+import {BYE,CALC,RESULT} from './Message';
+import { BADFLAGS } from 'dns';
+
+function getSumOfDivisors(numberToCheck:number):number{
+   const halfOfNumberToCheck = Math.ceil(numberToCheck/2) + 1;
+   let   sumDivisors = 0;
+   for ( let j=1; j<numberToCheck; j++){
+      if (numberToCheck%j===0) sumDivisors += j;
+      if (halfOfNumberToCheck<j) break;
+   }
+   return sumDivisors;
+}
+
+async function protocol(s1:s1_Start):Promise<s1_End> {
+   let nextState1 = await s1.recv();
+   let nextState2:Is1_S2|undefined=undefined;
+   switch (nextState1.messageType) {
+      case messages.CALC: {
+         if (nextState1.message) {
+            const result = new RESULT( nextState1.message.value, getSumOfDivisors(nextState1.message.value) );
+            nextState2 = await nextState1.send_RESULT_to_p(result);
+         }
+         break;
+      }
+      case messages.BYE:{
+         const done = nextState1;
+         return new Promise( resolve => resolve(done) );
+      }
+   }
+   while ( true ){
+      if (nextState2) nextState1 = await nextState2.recv();
+      switch (nextState1.messageType) {
+         case messages.CALC: {
+            if (nextState1.message) {
+               const result = new RESULT( nextState1.message.value, getSumOfDivisors(nextState1.message.value) );
+               nextState2 = await nextState1.send_RESULT_to_p(result);
+            }
+         }
+         case messages.BYE:{
+            const done = nextState1;
+            return new Promise( resolve => resolve(done) );
+         }
+      }
+   }
+}
+
+async function start(){
+   await executeProtocol(protocol,'localhost',40001);
+}
+
+start();

@@ -1,0 +1,55 @@
+import {p_Start,p_End,executeProtocol} from './p';
+import {CALC,RESULT,BYE} from './Message';
+
+async function protocol(s1:p_Start):Promise<p_End> {
+   let state=s1;
+   let cntr=1;
+   for(let i=0;i<100;i++) {
+      switch (cntr) {
+         case 1: {
+            state = await state.send_CALC_to_s1(new CALC(i));
+            break;
+         }
+         case 2: {
+            state = await state.send_CALC_to_s2(new CALC(i));
+            break;
+         }
+         case 3: {
+            state = await state.send_CALC_to_s3(new CALC(i));
+            break;
+         }
+         case 4: {
+            state = await state.send_CALC_to_s4(new CALC(i));
+            break;
+         }
+         case 5: {
+            state = await state.send_CALC_to_s5(new CALC(i));
+            break;
+         }
+      }
+      ++cntr;
+      if (cntr === 6) cntr = 1;
+   }
+   //
+   let state2 = await state.recv();
+   let cntr2  = 1;
+   while ( cntr2 < 100 ) {
+      if ( state2.message.sumOfDivisors === state2.message.value ) 
+         console.log(`perfect number ${state2.message.value}`);
+      state2  = await state2.recv();
+      cntr2++;
+   }   
+   const done1 = await state2.send_BYE_to_s1(new BYE());
+   const done2 = await done1.send_BYE_to_s2(new BYE());
+   const done3 = await done2.send_BYE_to_s3(new BYE());
+   const done4 = await done3.send_BYE_to_s4(new BYE());
+   const done5 = await done4.send_BYE_to_s5(new BYE());
+
+   return new Promise( resolve => resolve( done5 ) );
+}
+
+async function start(){
+   await executeProtocol(protocol,'localhost',30001);
+}
+
+start();

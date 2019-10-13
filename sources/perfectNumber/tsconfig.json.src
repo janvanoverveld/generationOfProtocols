@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "outDir": "./js",
+    "strict": true,
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  },
+  "files": [
+    "mediator.ts",
+    "receiveMessageServer.ts",
+    "sendMessage",
+    "Message.ts",
+    "globalObjects.ts",
+    "s1.ts",
+    "s2.ts",
+    "s3.ts",
+    "s4.ts",
+    "s5.ts",
+    "p.ts",
+    "startP.ts",
+    "startS1.ts",
+    "startS2.ts",
+    "startS3.ts",
+    "startS4.ts",
+    "startS5.ts",    
+    "start.ts"
+    ]
+}

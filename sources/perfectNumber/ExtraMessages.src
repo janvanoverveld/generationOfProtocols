@@ -1,0 +1,16 @@
+
+export class CALC extends Message {
+    constructor(public value: number) {
+        super(CALC.name);
+    }
+}
+export class RESULT extends Message {
+    constructor(public value: number, public sumOfDivisors:number) {
+        super(RESULT.name);
+    }
+}
+export class BYE extends Message {
+    constructor() {
+        super(BYE.name);
+    }
+}

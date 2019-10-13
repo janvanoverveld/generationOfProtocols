@@ -53,7 +53,7 @@ async function createProtocolFrameWork(sourceProtocolJson:string, repoSourceLoca
 }
 
 async function starter(pars:string[]){
-    console.log(`${new Date()}  example = ${pars[2].toUpperCase()}  startup = ${pars[3].toUpperCase()}`);
+    console.log(`${new Date()}  example = ${pars[2]}  startup = ${pars[3]}`);
     let opstartenRepo:boolean=false;
     let protocolExample = protocolExamples.get('A');
     if ( pars[3] && pars[3].toLowerCase() === 'j' ) opstartenRepo = true;
@@ -81,5 +81,6 @@ registerProtocolExample( 'B', 'AliceBobFred.json',          'sources/aliceBobFre
 registerProtocolExample( 'C', 'MathSvc.json',               'sources/mathSvc/');
 registerProtocolExample( 'D', 'Http.json',                  'sources/http/');
 registerProtocolExample( 'E', 'CustomerAgencyService.json', 'sources/customerAgencyService/');
+registerProtocolExample( 'F', 'PerfectNumber.json',         'sources/perfectNumber/');
 
 starter(process.argv);
