@@ -6,7 +6,7 @@ export async function sendMessage (roleFrom:roles,roleName:roles,msg:Message):Pr
     //console.log(`send ${msg.name} Message to ${roleName}`);
     const host = connectedRoles.getInfo(roleName).host;
     const port = connectedRoles.getInfo(roleName).port;
-    //console.log(`host ${host}   port ${port}`);
+    //console.log(`host ${host}   port ${port}   send ${msg.name}   Message to ${roleName}`);
     msg.from = roleFrom;    
     const options = { url: `http://${host}:${port}`,
                       headers: {'cache-control':'no-cache','Content-Type':'application/json','charset':'utf-8'},

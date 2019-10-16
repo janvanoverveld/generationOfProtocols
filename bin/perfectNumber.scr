@@ -1,6 +1,6 @@
 module perfectNumber;
 
-global protocol perfectNumber(role p, role s1, role s2, role s3, role s4, role s5) {
+global protocol perfectNumber(role p, role s1, role s2, role s3, role s4, role s5 ) {
     choice {
         CALC from p to s1;
         do perfectNumber(p,s1,s2,s3,s4,s5);
@@ -17,6 +17,11 @@ global protocol perfectNumber(role p, role s1, role s2, role s3, role s4, role s
         CALC from p to s5;
         do perfectNumber(p,s1,s2,s3,s4,s5);
     } or {
+        BYE from p to s1;
+        BYE from p to s2;
+        BYE from p to s3;
+        BYE from p to s4;
+        BYE from p to s5;
         do dealWithResult(p,s1,s2,s3,s4,s5);
     }
 }
@@ -38,10 +43,10 @@ aux global protocol dealWithResult(role p, role s1, role s2, role s3, role s4, r
         RESULT from s5 to p;
         do dealWithResult(p,s1,s2,s3,s4,s5);
     } or {
-        BYE from p to s1;
-        BYE from p to s2;
-        BYE from p to s3;
-        BYE from p to s4;
-        BYE from p to s5;
+        BYE from s1 to p;
+        BYE from s2 to p;
+        BYE from s3 to p;
+        BYE from s4 to p;
+        BYE from s5 to p;
     }
 }

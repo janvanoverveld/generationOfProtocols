@@ -1,6 +1,5 @@
 import {s5_Start,s5_End,Is5_S2,executeProtocol, messages} from './s5';
 import {BYE,CALC,RESULT} from './Message';
-import { BADFLAGS } from 'dns';
 
 function getSumOfDivisors(numberToCheck:number):number{
    const halfOfNumberToCheck = Math.ceil(numberToCheck/2) + 1;
@@ -13,36 +12,38 @@ function getSumOfDivisors(numberToCheck:number):number{
 }
 
 async function protocol(s1:s5_Start):Promise<s5_End> {
-   let nextState1 = await s1.recv();
-   let nextState2:Is5_S2|undefined=undefined;
-   switch (nextState1.messageType) {
-      case messages.CALC: {
-         if (nextState1.message) {
-            const result = new RESULT( nextState1.message.value, getSumOfDivisors(nextState1.message.value) );
-            nextState2 = await nextState1.send_RESULT_to_p(result);
-         }
-         break;
-      }
-      case messages.BYE:{
-         const done = nextState1;
-         return new Promise( resolve => resolve(done) );
+   let resolver:((s1_End)=>void)|null=null;
+   let promise = new Promise<s5_End>( (resolve,reject) => resolver = resolve );
+   const numberWithSumOfDivisors:Map<number,number>=new Map();
+   //
+   let nextstate = await s1.recv();
+   while (nextstate.messageType === messages.CALC ) {
+      if (nextstate.message) {
+         numberWithSumOfDivisors.set(nextstate.message.value,getSumOfDivisors(nextstate.message.value));
+         nextstate = await nextstate.recv();
       }
    }
-   while ( true ){
-      if (nextState2) nextState1 = await nextState2.recv();
-      switch (nextState1.messageType) {
-         case messages.CALC: {
-            if (nextState1.message) {
-               const result = new RESULT( nextState1.message.value, getSumOfDivisors(nextState1.message.value) );
-               nextState2 = await nextState1.send_RESULT_to_p(result);
-            }
+   //
+   if ( nextstate.messageType === messages.BYE ){
+      let nextstate2:Is5_S2|null=null;
+      for ( const key of numberWithSumOfDivisors.keys() ){
+         const sumOfDivisors = numberWithSumOfDivisors.get(key);
+         if ( sumOfDivisors ){
+            const result = new RESULT( key, sumOfDivisors );
+            if ( !nextstate2 )
+               nextstate2 = await nextstate.send_RESULT_to_p(result);
+            else nextstate2 = await nextstate2.send_RESULT_to_p(result);
          }
-         case messages.BYE:{
-            const done = nextState1;
-            return new Promise( resolve => resolve(done) );
+      }
+      if (nextstate2){
+         const done = await nextstate2.send_BYE_to_p(new BYE());
+         if (resolver) {
+            resolver = <((s2_End)=>void)> resolver;
+            resolver(done);
          }
       }
    }
+   return promise;
 }
 
 async function start(){

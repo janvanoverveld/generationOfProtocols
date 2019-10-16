@@ -1,5 +1,14 @@
+
+
 {
-    "roles":["s1","p","s2","s3","s4","s5"],
+    "roles":[
+        "s1",
+        "p",
+        "s2",
+        "s3",
+        "s4",
+        "s5"
+    ],
     "protocol":[
         {
             "role":"s1",
@@ -15,16 +24,10 @@
                             "next":"S1"
                         },
                         {
-                            "op":"send",
-                            "message":"RESULT",
-                            "role":"p",
-                            "next":"S2"
-                        },
-                        {
                             "op":"recv",
                             "message":"BYE",
                             "role":"p",
-                            "next":"S3"
+                            "next":"S2"
                         }
                     ]
                 },
@@ -39,7 +42,7 @@
                             "next":"S2"
                         },
                         {
-                            "op":"recv",
+                            "op":"send",
                             "message":"BYE",
                             "role":"p",
                             "next":"S3"
@@ -92,40 +95,10 @@
                             "next":"S1"
                         },
                         {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S2"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S2"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S2"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S2"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S2"
-                        },
-                        {
                             "op":"send",
                             "message":"BYE",
                             "role":"s1",
-                            "next":"S3"
+                            "next":"S2"
                         }
                     ]
                 },
@@ -134,39 +107,9 @@
                     "type":"normal",
                     "transitions":[
                         {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S2"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S2"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S2"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S2"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S2"
-                        },
-                        {
                             "op":"send",
                             "message":"BYE",
-                            "role":"s1",
+                            "role":"s2",
                             "next":"S3"
                         }
                     ]
@@ -178,7 +121,7 @@
                         {
                             "op":"send",
                             "message":"BYE",
-                            "role":"s2",
+                            "role":"s3",
                             "next":"S4"
                         }
                     ]
@@ -190,7 +133,7 @@
                         {
                             "op":"send",
                             "message":"BYE",
-                            "role":"s3",
+                            "role":"s4",
                             "next":"S5"
                         }
                     ]
@@ -202,7 +145,7 @@
                         {
                             "op":"send",
                             "message":"BYE",
-                            "role":"s4",
+                            "role":"s5",
                             "next":"S6"
                         }
                     ]
@@ -212,15 +155,93 @@
                     "type":"normal",
                     "transitions":[
                         {
-                            "op":"send",
-                            "message":"BYE",
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S6"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S6"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s3",
+                            "next":"S6"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s4",
+                            "next":"S6"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
                             "role":"s5",
+                            "next":"S6"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
                             "next":"S7"
                         }
                     ]
                 },
                 {
                     "name":"S7",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S8"
+                        }
+                    ]
+                },
+                {
+                    "name":"S8",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s3",
+                            "next":"S9"
+                        }
+                    ]
+                },
+                {
+                    "name":"S9",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s4",
+                            "next":"S10"
+                        }
+                    ]
+                },
+                {
+                    "name":"S10",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S11"
+                        }
+                    ]
+                },
+                {
+                    "name":"S11",
                     "type":"final",
                     "transitions":[
                     ]
@@ -241,16 +262,10 @@
                             "next":"S1"
                         },
                         {
-                            "op":"send",
-                            "message":"RESULT",
-                            "role":"p",
-                            "next":"S2"
-                        },
-                        {
                             "op":"recv",
                             "message":"BYE",
                             "role":"p",
-                            "next":"S3"
+                            "next":"S2"
                         }
                     ]
                 },
@@ -265,7 +280,7 @@
                             "next":"S2"
                         },
                         {
-                            "op":"recv",
+                            "op":"send",
                             "message":"BYE",
                             "role":"p",
                             "next":"S3"
@@ -294,16 +309,10 @@
                             "next":"S1"
                         },
                         {
-                            "op":"send",
-                            "message":"RESULT",
-                            "role":"p",
-                            "next":"S2"
-                        },
-                        {
                             "op":"recv",
                             "message":"BYE",
                             "role":"p",
-                            "next":"S3"
+                            "next":"S2"
                         }
                     ]
                 },
@@ -318,7 +327,7 @@
                             "next":"S2"
                         },
                         {
-                            "op":"recv",
+                            "op":"send",
                             "message":"BYE",
                             "role":"p",
                             "next":"S3"
@@ -347,16 +356,10 @@
                             "next":"S1"
                         },
                         {
-                            "op":"send",
-                            "message":"RESULT",
-                            "role":"p",
-                            "next":"S2"
-                        },
-                        {
                             "op":"recv",
                             "message":"BYE",
                             "role":"p",
-                            "next":"S3"
+                            "next":"S2"
                         }
                     ]
                 },
@@ -371,7 +374,7 @@
                             "next":"S2"
                         },
                         {
-                            "op":"recv",
+                            "op":"send",
                             "message":"BYE",
                             "role":"p",
                             "next":"S3"
@@ -400,16 +403,10 @@
                             "next":"S1"
                         },
                         {
-                            "op":"send",
-                            "message":"RESULT",
-                            "role":"p",
-                            "next":"S2"
-                        },
-                        {
                             "op":"recv",
                             "message":"BYE",
                             "role":"p",
-                            "next":"S3"
+                            "next":"S2"
                         }
                     ]
                 },
@@ -424,7 +421,7 @@
                             "next":"S2"
                         },
                         {
-                            "op":"recv",
+                            "op":"send",
                             "message":"BYE",
                             "role":"p",
                             "next":"S3"
