@@ -38,7 +38,7 @@ async function protocol(s1:s3_Start):Promise<s3_End> {
       if (nextstate2){
          const done = await nextstate2.send_BYE_to_p(new BYE());
          if (resolver) {
-            resolver = <((s2_End)=>void)> resolver;
+            resolver = <((s3_End)=>void)> resolver;
             resolver(done);
          }
       }

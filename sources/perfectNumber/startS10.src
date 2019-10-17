@@ -1,4 +1,4 @@
-import {s5_Start,s5_End,Is5_S2,executeProtocol, messages} from './s5';
+import {s10_Start,s10_End,Is10_S2,executeProtocol, messages} from './s10';
 import {BYE,CALC,RESULT} from './Message';
 
 function getSumOfDivisors(numberToCheck:number):number{
@@ -11,9 +11,9 @@ function getSumOfDivisors(numberToCheck:number):number{
    return sumDivisors;
 }
 
-async function protocol(s1:s5_Start):Promise<s5_End> {
+async function protocol(s1:s10_Start):Promise<s10_End> {
    let resolver:((s1_End)=>void)|null=null;
-   let promise = new Promise<s5_End>( (resolve,reject) => resolver = resolve );
+   let promise = new Promise<s10_End>( (resolve,reject) => resolver = resolve );
    const numberWithSumOfDivisors:Map<number,number>=new Map();
    //
    let nextstate = await s1.recv();
@@ -25,7 +25,7 @@ async function protocol(s1:s5_Start):Promise<s5_End> {
    }
    //
    if ( nextstate.messageType === messages.BYE ){
-      let nextstate2:Is5_S2|null=null;
+      let nextstate2:Is10_S2|null=null;
       for ( const key of numberWithSumOfDivisors.keys() ){
          const sumOfDivisors = numberWithSumOfDivisors.get(key);
          if ( sumOfDivisors ){
@@ -38,7 +38,7 @@ async function protocol(s1:s5_Start):Promise<s5_End> {
       if (nextstate2){
          const done = await nextstate2.send_BYE_to_p(new BYE());
          if (resolver) {
-            resolver = <((s5_End)=>void)> resolver;
+            resolver = <((s10_End)=>void)> resolver;
             resolver(done);
          }
       }
@@ -47,7 +47,7 @@ async function protocol(s1:s5_Start):Promise<s5_End> {
 }
 
 async function start(){
-   await executeProtocol(protocol,'localhost',40005);
+   await executeProtocol(protocol,'localhost',40010);
 }
 
 start();

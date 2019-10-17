@@ -1,52 +1,92 @@
 module perfectNumber;
 
-global protocol perfectNumber(role p, role s1, role s2, role s3, role s4, role s5 ) {
+global protocol perfectNumber( role p, role s1, role s2, role s3, role s4, role s5, role s6, role s7, role s8, role s9, role s10 ) {
     choice {
         CALC from p to s1;
-        do perfectNumber(p,s1,s2,s3,s4,s5);
+        do perfectNumber(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     } or {
         CALC from p to s2;
-        do perfectNumber(p,s1,s2,s3,s4,s5);
+        do perfectNumber(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     } or {
         CALC from p to s3;
-        do perfectNumber(p,s1,s2,s3,s4,s5);
+        do perfectNumber(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     } or {
         CALC from p to s4;
-        do perfectNumber(p,s1,s2,s3,s4,s5);
+        do perfectNumber(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     } or {
         CALC from p to s5;
-        do perfectNumber(p,s1,s2,s3,s4,s5);
+        do perfectNumber(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+    } or {
+        CALC from p to s6;
+        do perfectNumber(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+    } or {
+        CALC from p to s7;
+        do perfectNumber(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+    } or {
+        CALC from p to s8;
+        do perfectNumber(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+    } or {
+        CALC from p to s9;
+        do perfectNumber(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+    } or {
+        CALC from p to s10;
+        do perfectNumber(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     } or {
         BYE from p to s1;
         BYE from p to s2;
         BYE from p to s3;
         BYE from p to s4;
         BYE from p to s5;
-        do dealWithResult(p,s1,s2,s3,s4,s5);
+        BYE from p to s6;
+        BYE from p to s7;
+        BYE from p to s8;
+        BYE from p to s9;
+        BYE from p to s10;
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     }
 }
 
-aux global protocol dealWithResult(role p, role s1, role s2, role s3, role s4, role s5) {
+aux global protocol dealWithResult( role p, role s1, role s2, role s3, role s4, role s5, role s6, role s7, role s8, role s9, role s10 ) {
     choice {
         RESULT from s1 to p;
-        do dealWithResult(p,s1,s2,s3,s4,s5);
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     } or {
         RESULT from s2 to p;
-        do dealWithResult(p,s1,s2,s3,s4,s5);
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     } or {
         RESULT from s3 to p;
-        do dealWithResult(p,s1,s2,s3,s4,s5);
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     } or {
         RESULT from s4 to p;
-        do dealWithResult(p,s1,s2,s3,s4,s5);
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     } or {
         RESULT from s5 to p;
-        do dealWithResult(p,s1,s2,s3,s4,s5);
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+    } or {
+        RESULT from s6 to p;
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+    } or {
+        RESULT from s7 to p;
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+    } or {
+        RESULT from s8 to p;
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+    } or {
+        RESULT from s9 to p;
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
+    } or {
+        RESULT from s10 to p;
+        do dealWithResult(p,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10);
     } or {
         BYE from s1 to p;
         BYE from s2 to p;
         BYE from s3 to p;
         BYE from s4 to p;
         BYE from s5 to p;
+        BYE from s6 to p;
+        BYE from s7 to p;
+        BYE from s8 to p;
+        BYE from s9 to p;
+        BYE from s10 to p;
     }
 }
