@@ -1,15 +1,6 @@
 import {s10_Start,s10_End,Is10_S2,executeProtocol, messages} from './s10';
 import {BYE,CALC,RESULT} from './Message';
-
-function getSumOfDivisors(numberToCheck:number):number{
-   const halfOfNumberToCheck = Math.ceil(numberToCheck/2) + 1;
-   let   sumDivisors = 0;
-   for ( let j=1; j<numberToCheck; j++){
-      if (numberToCheck%j===0) sumDivisors += j;
-      if (halfOfNumberToCheck<j) break;
-   }
-   return sumDivisors;
-}
+import {getSumOfDivisors} from './getSumOfDivisors';
 
 async function protocol(s1:s10_Start):Promise<s10_End> {
    let resolver:((s1_End)=>void)|null=null;

@@ -12,6 +12,7 @@
   "files": [
     "mediator.ts",
     "receiveMessageServer.ts",
+    "getSumOfDivisors.ts",
     "sendMessage",
     "Message.ts",
     "globalObjects.ts",
