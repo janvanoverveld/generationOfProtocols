@@ -2,12 +2,16 @@ import {p_Start,p_End,executeProtocol,Ip} from './p';
 import {CALC,RESULT,BYE} from './Message';
 import { messages } from './s1';
 
+//const tempLOGFOLDER = "log/";
+//var logger   = fs.createWriteStream( tempLOGFOLDER + 'logP.txt', { flags: 'w' });
+//var log      = (tekst:string) => { logger.write(tekst+'\r\n');};
+
 async function protocol(s1:p_Start):Promise<p_End> {
    let resolver:((p_End)=>void)|null=null;
    let promise = new Promise<p_End>( (resolve,reject) => resolver = resolve );
    let state0=s1;
    let cntr=1;
-   const maxNumbers=10000;
+   const maxNumbers=10;
    for(let i=0;i<maxNumbers;i++) {
       const calc=new CALC(i);
       switch (cntr) { case 1:  { state0 = await state0.send_CALC_to_s1(calc);  break; }

@@ -77,7 +77,8 @@ function getInterfacesAsText(interfaces:StateInterface[]):string{
         // create recv interface method
         if ( inf.recvInterfaces.length > 0 ) {
             const recvMethodReturnTypes:ts.TypeNode[]=[];
-            for ( const recvState of inf.recvInterfaces ){
+//            for ( const recvState of new Set(inf.recvInterfaces) ){
+            for ( const recvState of inf.recvInterfaces ){    
                recvMethodReturnTypes.push(ts.createTypeReferenceNode(ts.createIdentifier(recvState), undefined));
             }
             let metReturnType:ts.TypeNode=ts.createUnionTypeNode(recvMethodReturnTypes);

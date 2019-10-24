@@ -19,7 +19,7 @@ async function protocol(s1:s2_Start):Promise<s2_End> {
       let nextstate2:Is2_S2|null=null;
       for ( const key of numberWithSumOfDivisors.keys() ){
          const sumOfDivisors = numberWithSumOfDivisors.get(key);
-         if ( sumOfDivisors ){
+         if ( sumOfDivisors || sumOfDivisors === 0 ){
             const result = new RESULT( key, sumOfDivisors );
             if ( !nextstate2 )
                nextstate2 = await nextstate.send_RESULT_to_p(result);
