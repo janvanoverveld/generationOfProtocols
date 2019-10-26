@@ -20,9 +20,12 @@ function writeLogFile(fileName:string,data:string){
                            } );
 }
 
-function executeNodeProcess(fileName:string){
+function executeNodeProcess(fileName:string,args:string[]|null){
     console.log(`start ${fileName}   ${new Date()} `);
     const parameters = [`${__dirname}/${fileName}`];
+    if (args){
+        args.forEach((e) => parameters.push(e));
+    }
     child.execFile( 'node'
     , parameters
     , (err,data) => { if (err){
@@ -35,9 +38,10 @@ function executeNodeProcess(fileName:string){
     console.log(`eind executeNodeProcess ${fileName}`);
 };
 
-executeNodeProcess(mediatorFileName);
+executeNodeProcess(mediatorFileName,null);
 
 const startupLocalProtocolFiles = fs.readdirSync(__dirname).filter((f)=>f.includes('start'));
 for ( const startFile of startupLocalProtocolFiles ){
-    if ( startFile !== 'start.js' ) global.setTimeout( () => executeNodeProcess( startFile ), 500 );
+    if ( startFile === 'startP.js' ) global.setTimeout( () => executeNodeProcess( startFile, process.argv ), 500 );
+    if ( startFile !== 'start.js' && startFile !== 'startP.js' ) global.setTimeout( () => executeNodeProcess( startFile, null ), 500 );
 }

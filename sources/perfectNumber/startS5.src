@@ -1,11 +1,11 @@
-import {s1_Start,s1_End,Is1_S2,executeProtocol, messages} from './s1';
+import {s5_Start,s5_End,executeProtocol, messages} from './s5';
 import {BYE,CALC,RESULT} from './Message';
 import {getSumOfDivisors} from './getSumOfDivisors';
 
-async function protocol(s1:s1_Start):Promise<s1_End> {
-   let resolver:((s1_End)=>void)|null=null;
-   let promise = new Promise<s1_End>( (resolve,reject) => resolver = resolve );
-   const mapWithSumOfDivisors:Map<number,number>=new Map();   
+async function protocol(s1:s5_Start):Promise<s5_End> {
+   let resolver:((s5_End)=>void)|null=null;
+   let promise = new Promise<s5_End>( (resolve,reject) => resolver = resolve );
+   const mapWithSumOfDivisors:Map<number,number>=new Map();
    //
    let nextstate = await s1.recv();
    while (nextstate.messageType === messages.CALC ) {
@@ -26,7 +26,7 @@ async function protocol(s1:s1_Start):Promise<s1_End> {
       }
       const done = await nextstate.send_BYE_to_p(new BYE());
       if (resolver) {
-           // @ts-ignore 
+           // @ts-ignore
            resolver(done);
       }
    }
@@ -34,7 +34,7 @@ async function protocol(s1:s1_Start):Promise<s1_End> {
 }
 
 async function start(){
-   await executeProtocol(protocol,'localhost',40001);
+   await executeProtocol(protocol,'localhost',40005);
 }
 
 start();

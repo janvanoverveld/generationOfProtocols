@@ -1,32 +1,29 @@
-import {p_Start,p_End,executeProtocol,Ip} from './p';
-import {CALC,RESULT,BYE} from './Message';
-import { messages } from './s1';
+import {p_Start,p_End,executeProtocol,Ip,Ip_S4,Ip_S5,Ip_S6,Ip_S7,Ip_S11,} from './p';
+import {CALC,RESULT,BYE,Message} from './Message';
+import * as fs from 'fs';
 
 //const tempLOGFOLDER = "log/";
 //var logger   = fs.createWriteStream( tempLOGFOLDER + 'logP.txt', { flags: 'w' });
 //var log      = (tekst:string) => { logger.write(tekst+'\r\n');};
+
+var   maxNumbers=10000;
+var   maxGroupSize=1000;
 
 async function protocol(s1:p_Start):Promise<p_End> {
    let resolver:((p_End)=>void)|null=null;
    let promise = new Promise<p_End>( (resolve,reject) => resolver = resolve );
    let state0=s1;
    let cntr=1;
-   const maxNumbers=10;
-   for(let i=0;i<maxNumbers;i++) {
-      const calc=new CALC(i);
+   for(let i=0;i<maxNumbers;i+=maxGroupSize) {
+      const calc=new CALC(i,i+maxGroupSize);
       switch (cntr) { case 1:  { state0 = await state0.send_CALC_to_s1(calc);  break; }
                       case 2:  { state0 = await state0.send_CALC_to_s2(calc);  break; }
                       case 3:  { state0 = await state0.send_CALC_to_s3(calc);  break; }
                       case 4:  { state0 = await state0.send_CALC_to_s4(calc);  break; }
                       case 5:  { state0 = await state0.send_CALC_to_s5(calc);  break; }
-                      case 6:  { state0 = await state0.send_CALC_to_s6(calc);  break; }
-                      case 7:  { state0 = await state0.send_CALC_to_s7(calc);  break; }
-                      case 8:  { state0 = await state0.send_CALC_to_s8(calc);  break; }
-                      case 9:  { state0 = await state0.send_CALC_to_s9(calc);  break; }
-                      case 10: { state0 = await state0.send_CALC_to_s10(calc); break; }
       }
       ++cntr;
-      if (cntr === 11) cntr = 1;
+      if (cntr === 6) cntr = 1;
    }
    //
    let state1  = await state0.send_BYE_to_s1(new BYE());
@@ -34,40 +31,55 @@ async function protocol(s1:p_Start):Promise<p_End> {
    let state3  = await state2.send_BYE_to_s3(new BYE());
    let state4  = await state3.send_BYE_to_s4(new BYE());
    let state5  = await state4.send_BYE_to_s5(new BYE());
-   let state6  = await state5.send_BYE_to_s6(new BYE());
-   let state7  = await state6.send_BYE_to_s7(new BYE());
-   let state8  = await state7.send_BYE_to_s8(new BYE());
-   let state9  = await state8.send_BYE_to_s9(new BYE());
-   let state10 = await state9.send_BYE_to_s10(new BYE());
    //
-   let state11 = await state10.recv();
-   while ( state11.messageType === messages.RESULT ) {
-      if ( state11.message && state11.message.sumOfDivisors === state11.message.value )
-         console.log(`perfect number ${state11.message.value}`);
-      state11  = await state11.recv();
-   }
-   if ( state11.messageType === messages.BYE ) {
-      const state12   = await state11.recv();
-      const state13   = await state12.recv();
-      const state14   = await state13.recv();
-      const state15   = await state14.recv();
-      const state16   = await state15.recv();
-      const state17   = await state16.recv();
-      const state18   = await state17.recv();
-      const state19   = await state18.recv();
-      const done    = await state19.recv();
-      if ( resolver ) {
-         resolver = <((p_End)=>void)>resolver;
-         resolver(done);
+   let state6 = await state5.recv();
+   if ( state6.message && state6.message.name === RESULT.name ) {
+      const result = <RESULT>state6.message;
+      if ( result.sumOfDivisors === result.value ){
+         console.log(`perfect number ${result.value}`);
       }
+   }
+
+   let stateX  = await state6.recv();
+   while ( true ) {
+      // @ts-ignore   een check of de recv functie voorkomt
+      if ( typeof stateX.recv !== 'function') break;
+      if ( stateX.message && stateX.message.name === RESULT.name ) {
+         const result = <RESULT>stateX.message;
+         if ( result.sumOfDivisors === result.value ){
+            console.log(`perfect number ${result.value}`);
+         }
+         // @ts-ignore
+         stateX  = await stateX.recv();
+      } else if ( stateX.message && stateX.message.name === BYE.name ) {
+         // @ts-ignore
+         stateX  = await stateX.recv();
+      } else break;
+   };
+   const done    = <p_End> stateX;
+   if ( resolver ) {
+      resolver = <((p_End)=>void)>resolver;
+      resolver(done);
    }
    return promise;
 }
 
-async function start(){
+async function start(pars:string[]){
+   let par1 = pars[4];
+   let par2 = pars[5];
+   if (par1) {
+      console.log(`par 1 = ${par1}`);
+      if (!Number.isNaN(Number(par1))) maxNumbers = Number(par1);
+   }
+   if (par2) {
+      console.log(`par 2 = ${par2}`);
+      if (!Number.isNaN(Number(par2))) maxGroupSize = Number(par2);
+   }
+   console.log(`total numbers to process  = ${maxNumbers}`);
+   console.log(`size of groups of numbers = ${maxGroupSize}`);
    console.time("generated perfectNumber Timing");
    await executeProtocol(protocol,'localhost',30001);
    console.timeEnd("generated perfectNumber Timing");
 }
 
-start();
+start(process.argv);

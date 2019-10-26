@@ -1,33 +1,103 @@
 module perfectNumber;
 
-global protocol perfectNumber( role p, role s1, role s2, role s3 ) {
+global protocol perfectNumber( role p, role s1, role s2, role s3, role s4, role s5 ) {
     choice {
         CALC from p to s1;
-        do perfectNumber(p,s1,s2,s3);
+        do perfectNumber(p,s1,s2,s3,s4,s5);
     } or {
         CALC from p to s2;
-        do perfectNumber(p,s1,s2,s3);
+        do perfectNumber(p,s1,s2,s3,s4,s5);
     } or {
         CALC from p to s3;
-        do perfectNumber(p,s1,s2,s3);
+        do perfectNumber(p,s1,s2,s3,s4,s5);
+    } or {
+        CALC from p to s4;
+        do perfectNumber(p,s1,s2,s3,s4,s5);
+    } or {
+        CALC from p to s5;
+        do perfectNumber(p,s1,s2,s3,s4,s5);
     } or {
         BYE from p to s1;
         BYE from p to s2;
         BYE from p to s3;
-        do dealWithResult1(p,s1,s2,s3);
+        BYE from p to s4;
+        BYE from p to s5;
+        do dealWithResult5(p,s1,s2,s3,s4,s5);
     }
 }
 
-aux global protocol dealWithResult1( role p, role s1, role s2, role s3 ) {
+aux global protocol dealWithResult5( role p, role s1, role s2, role s3, role s4, role s5 ) {
     choice {
         RESULT from s1 to p;
-        do dealWithResult1(p,s1,s2,s3);
+        do dealWithResult5(p,s1,s2,s3,s4,s5);
     } or {
         RESULT from s2 to p;
-        do dealWithResult1(p,s1,s2,s3);
+        do dealWithResult5(p,s1,s2,s3,s4,s5);
     } or {
         RESULT from s3 to p;
-        do dealWithResult1(p,s1,s2,s3);
+        do dealWithResult5(p,s1,s2,s3,s4,s5);
+    } or {
+        RESULT from s4 to p;
+        do dealWithResult5(p,s1,s2,s3,s4,s5);
+    } or {
+        RESULT from s5 to p;
+        do dealWithResult5(p,s1,s2,s3,s4,s5);
+    } or {
+        BYE from s1 to p;
+        do dealWithResult4(p,s2,s3,s4,s5);
+    } or {
+        BYE from s2 to p;
+        do dealWithResult4(p,s1,s3,s4,s5);
+    } or {
+        BYE from s3 to p;
+        do dealWithResult4(p,s1,s2,s4,s5);
+    } or {
+        BYE from s4 to p;
+        do dealWithResult4(p,s1,s2,s3,s5);
+    } or {
+        BYE from s5 to p;
+        do dealWithResult4(p,s1,s2,s3,s4);
+    }
+}
+
+aux global protocol dealWithResult4( role p, role s1, role s2, role s3, role s4 ) {
+    choice {
+        RESULT from s1 to p;
+        do dealWithResult4(p,s1,s2,s3,s4);
+    } or {
+        RESULT from s2 to p;
+        do dealWithResult4(p,s1,s2,s3,s4);
+    } or {
+        RESULT from s3 to p;
+        do dealWithResult4(p,s1,s2,s3,s4);
+    } or {
+        RESULT from s4 to p;
+        do dealWithResult4(p,s1,s2,s3,s4);
+    } or {
+        BYE from s1 to p;
+        do dealWithResult3(p,s2,s3,s4);
+    } or {
+        BYE from s2 to p;
+        do dealWithResult3(p,s1,s3,s4);
+    } or {
+        BYE from s3 to p;
+        do dealWithResult3(p,s1,s2,s4);
+    } or {
+        BYE from s4 to p;
+        do dealWithResult3(p,s1,s2,s3);
+    }
+}
+
+aux global protocol dealWithResult3( role p, role s1, role s2, role s3 ) {
+    choice {
+        RESULT from s1 to p;
+        do dealWithResult3(p,s1,s2,s3);
+    } or {
+        RESULT from s2 to p;
+        do dealWithResult3(p,s1,s2,s3);
+    } or {
+        RESULT from s3 to p;
+        do dealWithResult3(p,s1,s2,s3);
     } or {
         BYE from s1 to p;
         do dealWithResult2(p,s2,s3);
@@ -49,17 +119,17 @@ aux global protocol dealWithResult2( role p, role s1, role s2 ) {
         do dealWithResult2(p,s1,s2);
     } or {
         BYE from s1 to p;
-        do dealWithResult3(p,s2);
+        do dealWithResult1(p,s2);
     } or {
         BYE from s2 to p;
-        do dealWithResult3(p,s1);
+        do dealWithResult1(p,s1);
     }
 }
 
-aux global protocol dealWithResult3( role p, role s1 ) {
+aux global protocol dealWithResult1( role p, role s1 ) {
     choice {
         RESULT from s1 to p;
-        do dealWithResult3(p,s1);
+        do dealWithResult1(p,s1);
     } or {
         BYE from s1 to p;
     }
