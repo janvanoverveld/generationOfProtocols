@@ -30,7 +30,7 @@ function terminate(){
         setTimeout(
            () => { httpServer.close();
                    console.log('server is afgebroken, het protocol wordt nu geeindigd');
-                 }, 5000 );
+                 }, 50 );
 }
 
 const receiveMessageServer = {
