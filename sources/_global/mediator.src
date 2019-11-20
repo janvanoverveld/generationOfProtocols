@@ -7,10 +7,8 @@ import {messageDB} from './messageDB';
 async function initProtocolByMediator(){
     while ( true ) {
         const msg = await messageDB.remove((m)=>m.name===ROLEMESSAGE.name);
-        if ( msg.name = ROLEMESSAGE.name) {
-            connectedRoles.save(msg);
-        }
-
+        connectedRoles.save(msg);
+        
         const allRoles = Object.values(roles);
         const missingRoles = allRoles.filter( (role) => connectedRoles.missing(role) );
         missingRoles.forEach(  (role) => console.log(`${role} nog niet aanwezig`) );
