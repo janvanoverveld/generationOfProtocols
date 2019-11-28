@@ -8,10 +8,10 @@ async function initProtocolByMediator(){
     while ( true ) {
         const msg = await messageDB.remove((m)=>m.name===ROLEMESSAGE.name);
         connectedRoles.save(msg);
-        
+
         const allRoles = Object.values(roles);
         const missingRoles = allRoles.filter( (role) => connectedRoles.missing(role) );
-        missingRoles.forEach(  (role) => console.log(`${role} nog niet aanwezig`) );
+        missingRoles.forEach(  (role) => console.log(`${role} has not started`) );
 
         if ( missingRoles.length > 0){
             continue;
@@ -26,11 +26,10 @@ async function initProtocolByMediator(){
         }
 
         receiveMessageServer.terminate();
-        console.log('protocol is gestart');
+        console.log('protocol started ${new Date()}');
         break;
     }
 }
 
 receiveMessageServer.start(connectedRoles.getInfo(roles.mediator).port);
 initProtocolByMediator();
-console.log(`De mediator is gestart  ${new Date()}`);

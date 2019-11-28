@@ -1,0 +1,66 @@
+module perfectNumber;
+
+global protocol perfectNumber( role p, role s1, role s2, role s3 ) {
+    choice {
+        CALC from p to s1;
+        do perfectNumber(p,s1,s2,s3);
+    } or {
+        CALC from p to s2;
+        do perfectNumber(p,s1,s2,s3);
+    } or {
+        CALC from p to s3;
+        do perfectNumber(p,s1,s2,s3);
+    } or {
+        BYE from p to s1;
+        BYE from p to s2;
+        BYE from p to s3;
+        do dealWithResult3(p,s1,s2,s3);
+    }
+}
+
+aux global protocol dealWithResult3( role p3, role s31, role s32, role s33 ) {
+    choice {
+        RESULT from s31 to p3;
+        do dealWithResult3(p3,s31,s32,s33);
+    } or {
+        RESULT from s32 to p3;
+        do dealWithResult3(p3,s31,s32,s33);
+    } or {
+        RESULT from s33 to p3;
+        do dealWithResult3(p3,s31,s32,s33);
+    } or {
+        BYE from s31 to p3;
+        do dealWithResult2(p3,s32,s33);
+    } or {
+        BYE from s32 to p3;
+        do dealWithResult2(p3,s31,s33);
+    } or {
+        BYE from s33 to p3;
+        do dealWithResult2(p3,s31,s32);
+    }
+}
+
+aux global protocol dealWithResult2( role p2, role s21, role s22 ) {
+    choice {
+        RESULT from s21 to p2;
+        do dealWithResult2(p2,s21,s22);
+    } or {
+        RESULT from s22 to p2;
+        do dealWithResult2(p2,s21,s22);
+    } or {
+        BYE from s21 to p2;
+        do dealWithResult1(p2,s22);
+    } or {
+        BYE from s22 to p2;
+        do dealWithResult1(p2,s21);
+    }
+}
+
+aux global protocol dealWithResult1( role p1, role s11 ) {
+    choice {
+        RESULT from s11 to p1;
+        do dealWithResult1(p1,s11);
+    } or {
+        BYE from s11 to p1;
+    }
+}
