@@ -8,11 +8,11 @@ import {capitalize,readFile} from './includedCustomLibraries/sharedFunctions';
 type protocolExampleType = {
     jsonDataSource: string;
     filesSourceLocation: string;
+    description: string;
 }
 
 const protocolExamples:Map<string,protocolExampleType>=new Map();
-
-const registerProtocolExample = (id:string,jsonDataSource:string,filesSourceLocation:string) => protocolExamples.set(id,{jsonDataSource:jsonDataSource,filesSourceLocation:filesSourceLocation});
+const registerProtocolExample = (id:string,jsonDataSource:string,filesSourceLocation:string,description:string) => protocolExamples.set(id,{jsonDataSource:jsonDataSource,filesSourceLocation:filesSourceLocation,description:description});
 
 async function createProtocolFrameWork(sourceProtocolJson:string, repoSourceLocation:string, startTargetRepo:boolean ):Promise<void>
 {
@@ -52,35 +52,86 @@ async function createProtocolFrameWork(sourceProtocolJson:string, repoSourceLoca
     return new Promise ( resolve => repoGeneratorResolver=resolve );
 }
 
-async function starter(pars:string[]){
-    console.log(`${new Date()}  example = ${pars[2]}  startup = ${pars[3]}`);
-    let opstartenRepo:boolean=false;
-    let protocolExample = protocolExamples.get('A');
-    if ( pars[3] && pars[3].toLowerCase() === 'j' ) opstartenRepo = true;
-    if ( pars[2] && pars[2] === '0' ){
+async function startProtocolExamples(exampleProtocol:string,startupExample:boolean) {
+    if ( exampleProtocol === '0' && startupExample ){
+        console.log(`${new Date()}  all example repositories are started up`);
+    }
+    if ( exampleProtocol !== '0' && startupExample ){
+        console.log(`${new Date()}  ${protocolExamples.get(exampleProtocol) } is started up`);
+    }
+    if ( exampleProtocol === '0' && !startupExample ){
+        console.log(`${new Date()}  all example repositories are build`);
+    }
+    if ( exampleProtocol !== '0' && !startupExample ){
+        console.log(`${new Date()}  ${protocolExamples.get(exampleProtocol) } is build`);
+    }
+
+    if ( exampleProtocol === '0' ){
         for ( const protocolId of protocolExamples.keys() ){
-            protocolExample = protocolExamples.get(protocolId);
+            const protocolExample = protocolExamples.get(protocolId);
             if (protocolExample) {
-                await createProtocolFrameWork( protocolExample.jsonDataSource, protocolExample.filesSourceLocation, opstartenRepo ); 
+                await createProtocolFrameWork( protocolExample.jsonDataSource, protocolExample.filesSourceLocation, startupExample ); 
             }
         }
         return;
     }
-    if ( pars[2] ) {
-       protocolExample=protocolExamples.get(pars[2].toUpperCase());
-    } 
+    const protocolExample=protocolExamples.get(exampleProtocol);
     if ( protocolExample ){
-        createProtocolFrameWork( protocolExample.jsonDataSource, protocolExample.filesSourceLocation, opstartenRepo );
+        createProtocolFrameWork( protocolExample.jsonDataSource, protocolExample.filesSourceLocation, startupExample );
         return;
     }
+}
+
+function printHelp(){
+    console.log(`
+       examples for generating code are:
+       build all the example protocols   => node js/start 0
+       build and start all the excamples => node js/start 0 j
+    `);
+    console.log(`
+    generate commands for the examples separately are:
+    `)
+    protocolExamples.forEach( (v,k) => {
+       console.log(` ${v.description.padStart(20) }   : node js/start ${k}  `);
+    });
+    console.log(`
+    generate and startup commands for the examples separately are:
+    `)
+    protocolExamples.forEach( (v,k) => {
+       console.log(` ${v.description.padStart(20)}   : node js/start ${k} Y `);
+    });
+}
+
+function starter(pars:string[]){
+
+    if (!pars[2]) {
+        console.log(`There are no parameters specified, try 'node js/start help' for more information.`);
+        return;
+    }
+
+    if (pars[2].toLowerCase() === 'help' ) {
+        printHelp();
+        return;
+    }
+
+    if (pars[2]){
+        if (pars[2] === '0' || protocolExamples.has(pars[2].toUpperCase()) ){
+            const exampleProtocol = pars[2].toUpperCase();
+            let startupRepo:boolean=false;
+            if ( pars[3] && (pars[3].toLowerCase() === 'j' || pars[3].toLowerCase() === 'y') ) startupRepo = true;
+            startProtocolExamples(exampleProtocol,startupRepo);
+            return;
+        }
+    }
+
     console.log(`not a valid repository option --> ${pars[2]}`);
 }
 
-registerProtocolExample( 'A', 'AliceBob.json',              'sources/aliceBob/');
-registerProtocolExample( 'B', 'AliceBobFred.json',          'sources/aliceBobFred/');
-registerProtocolExample( 'C', 'MathSvc.json',               'sources/mathSvc/');
-registerProtocolExample( 'D', 'Http.json',                  'sources/http/');
-registerProtocolExample( 'E', 'CustomerAgencyService.json', 'sources/customerAgencyService/');
-registerProtocolExample( 'F', 'PerfectNumber.json',         'sources/perfectNumber/');
+registerProtocolExample( 'A',  'AliceBob.json'              , 'sources/aliceBob/'              , 'Alice and Bob'             );
+registerProtocolExample( 'B',  'AliceBobFred.json'          , 'sources/aliceBobFred/'          , 'Alice, Bob and Fred'       );
+registerProtocolExample( 'C',  'MathSvc.json'               , 'sources/mathSvc/'               , 'Math Service'              );
+registerProtocolExample( 'D',  'Http.json'                  , 'sources/http/'                  , 'HTTP protocol '     );
+registerProtocolExample( 'E',  'CustomerAgencyService.json' , 'sources/customerAgencyService/' , 'Travel agency'             );
+registerProtocolExample( 'F',  'PerfectNumber.json'         , 'sources/perfectNumber/'         , 'Perfect number' );
 
 starter(process.argv);
