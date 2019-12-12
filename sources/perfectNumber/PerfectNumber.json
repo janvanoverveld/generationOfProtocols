@@ -1,5 +1,3 @@
-
-
 {
     "roles":[
         "s1",
@@ -19,15 +17,15 @@
                     "transitions":[
                         {
                             "op":"recv",
-                            "message":"CALC",
-                            "role":"p",
-                            "next":"S1"
-                        },
-                        {
-                            "op":"recv",
                             "message":"BYE",
                             "role":"p",
                             "next":"S2"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"CALC",
+                            "role":"p",
+                            "next":"S1"
                         }
                     ]
                 },
@@ -66,9 +64,9 @@
                     "transitions":[
                         {
                             "op":"send",
-                            "message":"CALC",
+                            "message":"BYE",
                             "role":"s1",
-                            "next":"S1"
+                            "next":"S2"
                         },
                         {
                             "op":"send",
@@ -79,7 +77,13 @@
                         {
                             "op":"send",
                             "message":"CALC",
-                            "role":"s3",
+                            "role":"s1",
+                            "next":"S1"
+                        },
+                        {
+                            "op":"send",
+                            "message":"CALC",
+                            "role":"s5",
                             "next":"S1"
                         },
                         {
@@ -91,14 +95,8 @@
                         {
                             "op":"send",
                             "message":"CALC",
-                            "role":"s5",
+                            "role":"s3",
                             "next":"S1"
-                        },
-                        {
-                            "op":"send",
-                            "message":"BYE",
-                            "role":"s1",
-                            "next":"S2"
                         }
                     ]
                 },
@@ -157,24 +155,6 @@
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s1",
-                            "next":"S6"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S6"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S6"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
                             "role":"s4",
                             "next":"S6"
                         },
@@ -186,249 +166,51 @@
                         },
                         {
                             "op":"recv",
-                            "message":"BYE",
+                            "message":"RESULT",
+                            "role":"s3",
+                            "next":"S6"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S6"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
                             "role":"s1",
+                            "next":"S6"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s3",
                             "next":"S7"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s2",
+                            "role":"s4",
                             "next":"S8"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s3",
+                            "role":"s5",
                             "next":"S9"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s4",
+                            "role":"s2",
                             "next":"S10"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s5",
+                            "role":"s1",
                             "next":"S11"
-                        }
-                    ]
-                },
-                {
-                    "name":"S7",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S7"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S7"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S7"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S7"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S12"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s3",
-                            "next":"S13"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s4",
-                            "next":"S14"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S15"
-                        }
-                    ]
-                },
-                {
-                    "name":"S8",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S8"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S8"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S8"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S8"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s3",
-                            "next":"S17"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s4",
-                            "next":"S18"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S19"
-                        }
-                    ]
-                },
-                {
-                    "name":"S9",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S9"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S9"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S9"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S9"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s4",
-                            "next":"S20"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S21"
-                        }
-                    ]
-                },
-                {
-                    "name":"S10",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S10"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S10"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S10"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S10"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s3",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S22"
                         }
                     ]
                 },
@@ -439,13 +221,13 @@
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s1",
+                            "role":"s4",
                             "next":"S11"
                         },
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s2",
+                            "role":"s5",
                             "next":"S11"
                         },
                         {
@@ -457,56 +239,248 @@
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s4",
+                            "role":"s2",
                             "next":"S11"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
                             "role":"s3",
-                            "next":"S16"
+                            "next":"S12"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
                             "role":"s4",
-                            "next":"S16"
+                            "next":"S13"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S14"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S15"
                         }
                     ]
                 },
                 {
-                    "name":"S12",
+                    "name":"S15",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s4",
+                            "next":"S15"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s5",
+                            "next":"S15"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s3",
+                            "next":"S15"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s3",
+                            "next":"S16"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s4",
+                            "next":"S17"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S18"
+                        }
+                    ]
+                },
+                {
+                    "name":"S18",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s4",
+                            "next":"S18"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s3",
+                            "next":"S18"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s3",
+                            "next":"S19"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s4",
+                            "next":"S20"
+                        }
+                    ]
+                },
+                {
+                    "name":"S20",
                     "type":"normal",
                     "transitions":[
                         {
                             "op":"recv",
                             "message":"RESULT",
                             "role":"s3",
-                            "next":"S12"
+                            "next":"S20"
                         },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s3",
+                            "next":"S21"
+                        }
+                    ]
+                },
+                {
+                    "name":"S21",
+                    "type":"final",
+                    "transitions":[
+                    ]
+                },
+                {
+                    "name":"S19",
+                    "type":"normal",
+                    "transitions":[
                         {
                             "op":"recv",
                             "message":"RESULT",
                             "role":"s4",
-                            "next":"S12"
+                            "next":"S19"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s4",
+                            "next":"S21"
+                        }
+                    ]
+                },
+                {
+                    "name":"S17",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s5",
+                            "next":"S17"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s3",
+                            "next":"S17"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s3",
+                            "next":"S22"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S20"
+                        }
+                    ]
+                },
+                {
+                    "name":"S22",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s5",
+                            "next":"S22"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S21"
+                        }
+                    ]
+                },
+                {
+                    "name":"S16",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s4",
+                            "next":"S16"
                         },
                         {
                             "op":"recv",
                             "message":"RESULT",
                             "role":"s5",
-                            "next":"S12"
+                            "next":"S16"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s4",
+                            "next":"S22"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S19"
+                        }
+                    ]
+                },
+                {
+                    "name":"S14",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s4",
+                            "next":"S14"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s3",
+                            "next":"S14"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S14"
                         },
                         {
                             "op":"recv",
@@ -523,422 +497,8 @@
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s5",
-                            "next":"S25"
-                        }
-                    ]
-                },
-                {
-                    "name":"S13",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
                             "role":"s2",
-                            "next":"S13"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S13"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S13"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s4",
-                            "next":"S26"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S27"
-                        }
-                    ]
-                },
-                {
-                    "name":"S14",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S14"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S14"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S14"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s3",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S28"
-                        }
-                    ]
-                },
-                {
-                    "name":"S15",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S15"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S15"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S15"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s3",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s4",
-                            "next":"S16"
-                        }
-                    ]
-                },
-                {
-                    "name":"S16",
-                    "type":"final",
-                    "transitions":[
-                    ]
-                },
-                {
-                    "name":"S17",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S17"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S17"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S17"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s4",
-                            "next":"S29"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S30"
-                        }
-                    ]
-                },
-                {
-                    "name":"S18",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
                             "next":"S18"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S18"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S18"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s3",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S31"
-                        }
-                    ]
-                },
-                {
-                    "name":"S19",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S19"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S19"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S19"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s3",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s4",
-                            "next":"S16"
-                        }
-                    ]
-                },
-                {
-                    "name":"S20",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S20"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S20"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S20"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S32"
-                        }
-                    ]
-                },
-                {
-                    "name":"S21",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S21"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S21"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S21"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s4",
-                            "next":"S16"
-                        }
-                    ]
-                },
-                {
-                    "name":"S22",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S22"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s2",
-                            "next":"S22"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s3",
-                            "next":"S22"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s3",
-                            "next":"S16"
-                        }
-                    ]
-                },
-                {
-                    "name":"S23",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
-                            "next":"S23"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s5",
-                            "next":"S23"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s4",
-                            "next":"S33"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S34"
                         }
                     ]
                 },
@@ -955,20 +515,20 @@
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s5",
+                            "role":"s2",
                             "next":"S24"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
                             "role":"s3",
-                            "next":"S16"
+                            "next":"S25"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s5",
-                            "next":"S35"
+                            "role":"s2",
+                            "next":"S20"
                         }
                     ]
                 },
@@ -979,26 +539,86 @@
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s3",
+                            "role":"s2",
                             "next":"S25"
                         },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S21"
+                        }
+                    ]
+                },
+                {
+                    "name":"S23",
+                    "type":"normal",
+                    "transitions":[
                         {
                             "op":"recv",
                             "message":"RESULT",
                             "role":"s4",
-                            "next":"S25"
+                            "next":"S23"
                         },
                         {
                             "op":"recv",
-                            "message":"BYE",
-                            "role":"s3",
-                            "next":"S16"
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S23"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
                             "role":"s4",
-                            "next":"S16"
+                            "next":"S25"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S19"
+                        }
+                    ]
+                },
+                {
+                    "name":"S13",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s5",
+                            "next":"S13"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s3",
+                            "next":"S13"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S13"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s3",
+                            "next":"S26"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S24"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S17"
                         }
                     ]
                 },
@@ -1009,86 +629,122 @@
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s2",
-                            "next":"S26"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
                             "role":"s5",
                             "next":"S26"
                         },
                         {
                             "op":"recv",
-                            "message":"BYE",
+                            "message":"RESULT",
                             "role":"s2",
-                            "next":"S16"
+                            "next":"S26"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
                             "role":"s5",
-                            "next":"S36"
+                            "next":"S25"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S22"
                         }
                     ]
                 },
                 {
-                    "name":"S27",
+                    "name":"S12",
                     "type":"normal",
                     "transitions":[
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s2",
-                            "next":"S27"
+                            "role":"s4",
+                            "next":"S12"
                         },
                         {
                             "op":"recv",
                             "message":"RESULT",
+                            "role":"s5",
+                            "next":"S12"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S12"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
                             "role":"s4",
-                            "next":"S27"
+                            "next":"S26"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S23"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
                             "role":"s2",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s4",
                             "next":"S16"
                         }
                     ]
                 },
                 {
-                    "name":"S28",
+                    "name":"S10",
                     "type":"normal",
                     "transitions":[
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s2",
-                            "next":"S28"
+                            "role":"s4",
+                            "next":"S10"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s5",
+                            "next":"S10"
                         },
                         {
                             "op":"recv",
                             "message":"RESULT",
                             "role":"s3",
-                            "next":"S28"
+                            "next":"S10"
                         },
                         {
                             "op":"recv",
-                            "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S10"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
                             "role":"s3",
-                            "next":"S16"
+                            "next":"S27"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s4",
+                            "next":"S28"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S29"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S15"
                         }
                     ]
                 },
@@ -1099,56 +755,38 @@
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s1",
+                            "role":"s4",
                             "next":"S29"
                         },
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s5",
+                            "role":"s3",
+                            "next":"S29"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
                             "next":"S29"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"BYE",
-                            "role":"s5",
-                            "next":"S37"
-                        }
-                    ]
-                },
-                {
-                    "name":"S30",
-                    "type":"normal",
-                    "transitions":[
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s1",
-                            "next":"S30"
-                        },
-                        {
-                            "op":"recv",
-                            "message":"RESULT",
-                            "role":"s4",
+                            "role":"s3",
                             "next":"S30"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
+                            "role":"s4",
+                            "next":"S31"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s4",
-                            "next":"S16"
+                            "role":"s1",
+                            "next":"S18"
                         }
                     ]
                 },
@@ -1159,26 +797,26 @@
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s1",
+                            "role":"s3",
                             "next":"S31"
                         },
                         {
                             "op":"recv",
                             "message":"RESULT",
-                            "role":"s3",
+                            "role":"s1",
                             "next":"S31"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s1",
-                            "next":"S16"
+                            "role":"s3",
+                            "next":"S32"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s3",
-                            "next":"S16"
+                            "role":"s1",
+                            "next":"S20"
                         }
                     ]
                 },
@@ -1194,21 +832,81 @@
                         },
                         {
                             "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S21"
+                        }
+                    ]
+                },
+                {
+                    "name":"S30",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
                             "message":"RESULT",
-                            "role":"s2",
+                            "role":"s4",
+                            "next":"S30"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S30"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s4",
                             "next":"S32"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
                             "role":"s1",
-                            "next":"S16"
+                            "next":"S19"
+                        }
+                    ]
+                },
+                {
+                    "name":"S28",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s5",
+                            "next":"S28"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s3",
+                            "next":"S28"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S28"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
-                            "role":"s2",
-                            "next":"S16"
+                            "role":"s3",
+                            "next":"S33"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S31"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S17"
                         }
                     ]
                 },
@@ -1224,27 +922,117 @@
                         },
                         {
                             "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S33"
+                        },
+                        {
+                            "op":"recv",
                             "message":"BYE",
                             "role":"s5",
-                            "next":"S16"
+                            "next":"S32"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S22"
                         }
                     ]
                 },
                 {
-                    "name":"S34",
+                    "name":"S27",
                     "type":"normal",
                     "transitions":[
                         {
                             "op":"recv",
                             "message":"RESULT",
                             "role":"s4",
+                            "next":"S27"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s5",
+                            "next":"S27"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S27"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s4",
+                            "next":"S33"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S30"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S16"
+                        }
+                    ]
+                },
+                {
+                    "name":"S9",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s4",
+                            "next":"S9"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s3",
+                            "next":"S9"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S9"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S9"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s3",
                             "next":"S34"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
                             "role":"s4",
-                            "next":"S16"
+                            "next":"S35"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S29"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S14"
                         }
                     ]
                 },
@@ -1260,9 +1048,33 @@
                         },
                         {
                             "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S35"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S35"
+                        },
+                        {
+                            "op":"recv",
                             "message":"BYE",
                             "role":"s3",
-                            "next":"S16"
+                            "next":"S36"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S31"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S24"
                         }
                     ]
                 },
@@ -1278,9 +1090,117 @@
                         },
                         {
                             "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S36"
+                        },
+                        {
+                            "op":"recv",
                             "message":"BYE",
                             "role":"s2",
-                            "next":"S16"
+                            "next":"S32"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S25"
+                        }
+                    ]
+                },
+                {
+                    "name":"S34",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s4",
+                            "next":"S34"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S34"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S34"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s4",
+                            "next":"S36"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S30"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S23"
+                        }
+                    ]
+                },
+                {
+                    "name":"S8",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s5",
+                            "next":"S8"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s3",
+                            "next":"S8"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S8"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S8"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s3",
+                            "next":"S37"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S35"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S28"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S13"
                         }
                     ]
                 },
@@ -1291,14 +1211,92 @@
                         {
                             "op":"recv",
                             "message":"RESULT",
+                            "role":"s5",
+                            "next":"S37"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S37"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
                             "role":"s1",
                             "next":"S37"
                         },
                         {
                             "op":"recv",
                             "message":"BYE",
+                            "role":"s5",
+                            "next":"S36"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S33"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
                             "role":"s1",
-                            "next":"S16"
+                            "next":"S26"
+                        }
+                    ]
+                },
+                {
+                    "name":"S7",
+                    "type":"normal",
+                    "transitions":[
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s4",
+                            "next":"S7"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s5",
+                            "next":"S7"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s2",
+                            "next":"S7"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"RESULT",
+                            "role":"s1",
+                            "next":"S7"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s4",
+                            "next":"S37"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s5",
+                            "next":"S34"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s2",
+                            "next":"S27"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"BYE",
+                            "role":"s1",
+                            "next":"S12"
                         }
                     ]
                 }
@@ -1313,15 +1311,15 @@
                     "transitions":[
                         {
                             "op":"recv",
-                            "message":"CALC",
-                            "role":"p",
-                            "next":"S1"
-                        },
-                        {
-                            "op":"recv",
                             "message":"BYE",
                             "role":"p",
                             "next":"S2"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"CALC",
+                            "role":"p",
+                            "next":"S1"
                         }
                     ]
                 },
@@ -1360,15 +1358,15 @@
                     "transitions":[
                         {
                             "op":"recv",
-                            "message":"CALC",
-                            "role":"p",
-                            "next":"S1"
-                        },
-                        {
-                            "op":"recv",
                             "message":"BYE",
                             "role":"p",
                             "next":"S2"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"CALC",
+                            "role":"p",
+                            "next":"S1"
                         }
                     ]
                 },
@@ -1407,15 +1405,15 @@
                     "transitions":[
                         {
                             "op":"recv",
-                            "message":"CALC",
-                            "role":"p",
-                            "next":"S1"
-                        },
-                        {
-                            "op":"recv",
                             "message":"BYE",
                             "role":"p",
                             "next":"S2"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"CALC",
+                            "role":"p",
+                            "next":"S1"
                         }
                     ]
                 },
@@ -1454,15 +1452,15 @@
                     "transitions":[
                         {
                             "op":"recv",
-                            "message":"CALC",
-                            "role":"p",
-                            "next":"S1"
-                        },
-                        {
-                            "op":"recv",
                             "message":"BYE",
                             "role":"p",
                             "next":"S2"
+                        },
+                        {
+                            "op":"recv",
+                            "message":"CALC",
+                            "role":"p",
+                            "next":"S1"
                         }
                     ]
                 },
