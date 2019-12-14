@@ -9,7 +9,7 @@
     "linkTS": "npm link typescript",
     "testExamples": "node js/start.js 0 j",
     "build": "npm install && npm run cleanJs && npm run linkTS && npm run transpile",
-    "start": "npm build && npm run testExamples"
+    "start": "npm run build && npm run testExamples"
   },
   "keywords": [
     "protocol",

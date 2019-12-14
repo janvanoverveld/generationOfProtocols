@@ -71,7 +71,10 @@
     "localProtocolAPI/stateInterfacesText.ts",
     "localProtocolAPI/stateClassesMetaData.ts",
     "localProtocolAPI/stateClassesText.ts",
-    "generateGlobalProtocolProject.ts",
+    "generate/generateGlobalProtocolProject.ts",
+    "generate/generateBasedOnJson.ts",
+    "generate/generateExamples.ts",
+    "generate/generateMessages.ts",    
     "start.ts"
     ]
 }

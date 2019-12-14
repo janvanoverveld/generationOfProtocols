@@ -1,28 +1,12 @@
-import {GlobalProtocolDefinition} from './includedCustomLibraries/globalProtocolDefinition';
-import {createLocalProtocolAPI} from './localProtocolAPI/createLocalProtocolAPI';
-import {readFile,writeFile} from './includedCustomLibraries/sharedFunctions';
+import {GlobalProtocolDefinition} from '../includedCustomLibraries/globalProtocolDefinition';
+import {createLocalProtocolAPI} from '../localProtocolAPI/createLocalProtocolAPI';
+import {readFile,writeFile,getEnumWithRoles} from '../includedCustomLibraries/sharedFunctions';
 import * as fs from 'fs';
-import * as ts from "typescript";
 
 const fileNameGlobalObjects = 'globalObjects.src';
 const fileNameMessages      = 'Message.src';
 const fileNameExtraMessages = 'ExtraMessages.src';
 const globalSourceLocation  = 'sources/_global/';
-
-function getEnumWithRoles(roles:string[]):string{
-    let enumMembers:ts.EnumMember[]=[];
-    roles.forEach((e)=>{
-        enumMembers.push(
-            ts.createEnumMember(
-                ts.createIdentifier(`${e.toLowerCase()}`)
-               ,ts.createStringLiteral(`${e.charAt(0).toUpperCase()}${e.slice(1).toLowerCase()}` ) )
-        );
-    });
-    const resultFile = ts.createSourceFile("dummy.ts","",ts.ScriptTarget.Latest,false,ts.ScriptKind.TS);
-    const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-    const rolesEnum:ts.EnumDeclaration=ts.createEnumDeclaration(undefined, undefined, ts.createIdentifier('roles'), enumMembers);
-    return printer.printNode( ts.EmitHint.Unspecified, rolesEnum, resultFile );
-}
 
 async function generateGlobalProtocolProject(protocolSpec:GlobalProtocolDefinition,targetLocation:string,extraSourceFilesLoc:string){
    console.log(`writing sourcefiles for ${extraSourceFilesLoc} `);
