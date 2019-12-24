@@ -22,6 +22,14 @@ function printHelp(){
     protocolExamples.forEach( (v,k) => {
        console.log(` ${v.description.padStart(20)}   : node js/start ${k} Y `);
     });
+    console.log(`
+
+    Generate framework for distributed programming based on json protocol decription: 
+    node js/start xxx.json
+
+    Alice and Bob example:
+    node js/start bin/AliceBob.json
+    `);
 }
 
 function starter(pars:string[]){
@@ -51,6 +59,7 @@ function starter(pars:string[]){
     }
 
     console.log(`not a valid repository option --> ${pars[2]}`);
+    console.log(`There are no parameters specified, try 'node js/start help' for more information.`);    
 }
 
 registerProtocolExample( 'A',  'AliceBob.json'              , 'sources/aliceBob/'              , 'Alice and Bob'             );

@@ -5,6 +5,9 @@ import {GlobalProtocolDefinition,displayProtocol} from '../includedCustomLibrari
 import {generateGlobalProtocolProject} from './generateGlobalProtocolProject';
 import {capitalize,writeFile,readFile,getEnumWithRoles} from '../includedCustomLibraries/sharedFunctions';
 import {generateMessages} from './generateMessages';
+import {createLocalProtocolAPI} from '../localProtocolAPI/createLocalProtocolAPI';
+import {getStartupFileRole} from './generateStartupFiles';
+import {returnTsConfigJson} from './generateTsConfigJson';
 
 async function generateBasedOnJson(jsonProtocolDslInputFile:string){
     console.log(`generate protocol api based on json input file ${jsonProtocolDslInputFile}`);
@@ -47,8 +50,6 @@ async function generateBasedOnJson(jsonProtocolDslInputFile:string){
         }
     );
 
-    protoSpec.protocol.forEach( (e) => roles.push(e.role) );
-
     // globalObjects
     let textFromSource = await readFile( 'sources/_global/globalObjects.src' );
     textFromSource += getEnumWithRoles(roles);
@@ -74,8 +75,29 @@ async function generateBasedOnJson(jsonProtocolDslInputFile:string){
     textFromSource = generateMessages(messages);
     await writeFile(targetRepoName + 'Message.ts',textFromSource);
 
+    // create static validated api for protocol role
+    protoSpec.protocol.forEach(
+        proto => writeFile(targetRepoName + proto.role + '.ts',createLocalProtocolAPI(proto))
+    );
+
+    let portNumber=30001; // mediator = 30000
+    for ( const r of roles ){
+        await writeFile(targetRepoName + `start${r}.ts`, getStartupFileRole(r,messages,portNumber++));
+    }
+
+    // start.ts
+    textFromSource = await readFile( 'sources/_global/start.src' );
+    await writeFile(targetRepoName + 'start.ts',textFromSource);
+
+    // package.json
+    textFromSource = await readFile( 'sources/_global/package.json.src' );
+    await writeFile(targetRepoName + 'package.json',textFromSource);
+
+    // tsconfig.json
+    await writeFile(targetRepoName + 'tsconfig.json', returnTsConfigJson(roles));
     //displayProtocol(protoSpec);
     //messages.forEach( s => console.log(`- ${s}`));
+
 }
 
 export {generateBasedOnJson}
